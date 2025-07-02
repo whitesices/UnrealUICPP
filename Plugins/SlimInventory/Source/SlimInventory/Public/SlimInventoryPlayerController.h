@@ -9,6 +9,8 @@
 class UInputMappingContext;
 class UInputAction;
 class USlimInventoryWidget;
+//引入自定义的InventoryComponent
+class USlimInventoryComponent;
 /**
  * 
  */
@@ -20,6 +22,11 @@ public:
 	ASlimInventoryPlayerController();
 	//重载Tick函数
 	virtual void Tick(float DeltaSeconds) override;
+
+	//打开Inventory
+	UFUNCTION(BlueprintCallable , Category="Inventory")
+	void ToggleInventory();
+
 protected:
 	//重载Beginplay
 	virtual void BeginPlay() override;
@@ -34,12 +41,19 @@ private:
 	//自定义创建TraceItem的方法
 	void TraceItem();
 
+	//声明InventoryComponent
+	TWeakObjectPtr<USlimInventoryComponent> InventoryComp;
+
 	//定义InputMapContext
 	UPROPERTY(EditDefaultsOnly , Category = "Inventory")
 	TArray< TObjectPtr<UInputMappingContext> > DefaultIMCs;
 	//定义InputAction
 	UPROPERTY(EditDefaultsOnly , Category = "Inventory")
 	TObjectPtr<UInputAction> PrimaryInteractAction;
+	//定义ToggleInventory InputAction
+	UPROPERTY(EditDefaultsOnly, Category = "Inventory")
+	TObjectPtr<UInputAction> ToggleInventoryUIInterAction;
+
 	//声明HUDWidgetClass
 	UPROPERTY(EditDefaultsOnly , Category = "Inventory")
 	TSubclassOf<USlimInventoryWidget> HUDWidgetClass;

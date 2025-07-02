@@ -16,10 +16,13 @@ class SLIMINVENTORY_API USlimInventoryComponent : public UActorComponent
 public:	
 	USlimInventoryComponent();
 
+	//声明触发打开InventoryUI的函数
+	void ToggleInventoryUI();
+
 protected:
 	virtual void BeginPlay() override;
 
-public:	
+private:	
 	//声明PlayerController变量
 	TWeakObjectPtr<APlayerController> OwningPlayerController;
 
@@ -33,5 +36,12 @@ public:
 	//声明一个变量来存储UI的类
 	UPROPERTY( EditAnywhere , Category = "Inventory" )
 	TSubclassOf<USlim_InventoryBase> InventoryUIMenuClass;
+
+	//声明flag来存储UI是否打开
+	bool bIsInventoryUIOpen;
+	//声明打开UI的函数
+	void OpenInventoryUI();
+	//声明关闭UI的函数
+	void CloseInventoryUI();
 		
 };

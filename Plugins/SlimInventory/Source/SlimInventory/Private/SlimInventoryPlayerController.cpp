@@ -15,6 +15,8 @@
 #include "Items/Components/SlimInventoryItemComponent.h"
 //引入自定义接口函数
 #include "Interaction/Inventory_Hightlightable.h"
+//引入自定义的inventoryComponent
+#include "InventoryManagement/Components/SlimInventoryComponent.h"
 
 ASlimInventoryPlayerController::ASlimInventoryPlayerController()
 {
@@ -32,6 +34,14 @@ void ASlimInventoryPlayerController::Tick(float DeltaSeconds)
 	TraceItem();
 }
 
+void ASlimInventoryPlayerController::ToggleInventory()
+{
+	//判断Inventory是否有效
+	if (!InventoryComp.IsValid()) return;
+	//调用管理UI开关的函数
+	InventoryComp->ToggleInventoryUI();
+}
+
 void ASlimInventoryPlayerController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -46,6 +56,10 @@ void ASlimInventoryPlayerController::BeginPlay()
 			Subsystem->AddMappingContext( CurrentContext , 0);
 		}
 	}
+
+	//获取自定义的InventoryComponent
+	InventoryComp = FindComponentByClass<USlimInventoryComponent>();
+
 	//创建HUDWidget
 	CreateHUDWidget();
 }
@@ -60,7 +74,8 @@ void ASlimInventoryPlayerController::SetupInputComponent()
 	UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent);
 	//绑定相应的输入
 	EnhancedInputComponent->BindAction( PrimaryInteractAction , ETriggerEvent::Started , this , &ASlimInventoryPlayerController::PrimaryInetract);
-
+	//绑定ToggleInventoryUI的InputAction
+	EnhancedInputComponent->BindAction( ToggleInventoryUIInterAction , ETriggerEvent::Started , this , &ASlimInventoryPlayerController::ToggleInventory);
 
 }
 
