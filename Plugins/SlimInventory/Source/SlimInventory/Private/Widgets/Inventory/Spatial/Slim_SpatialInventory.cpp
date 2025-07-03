@@ -6,6 +6,7 @@
 #include "Widgets/Inventory/Spatial/Slim_InventoryGrid.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/Button.h"
+#include "Items/Components/SlimInventoryItemComponent.h"
 
 void USlim_SpatialInventory::NativeOnInitialized()
 {
@@ -17,6 +18,11 @@ void USlim_SpatialInventory::NativeOnInitialized()
 	Button_Craftables->OnClicked.AddDynamic(this , &ThisClass::ShowCraftables);
 
 	ShowEquippables();
+}
+
+FSlimSlotAvailabilityResult USlim_SpatialInventory::HasRoomForItem(USlimInventoryItemComponent* ItemComponent) const
+{
+	return FSlimSlotAvailabilityResult();
 }
 
 void USlim_SpatialInventory::ShowEquippables()

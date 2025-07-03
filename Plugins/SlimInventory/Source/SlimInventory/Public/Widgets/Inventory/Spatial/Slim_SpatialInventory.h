@@ -20,6 +20,9 @@ public:
 	//重载初始化函数
 	virtual void NativeOnInitialized() override;
 
+	//重载父类的HasRoomForItem
+	virtual FSlimSlotAvailabilityResult HasRoomForItem(USlimInventoryItemComponent* ItemComponent) const override;
+
 private:
 	//声明选择器小部件
 	UPROPERTY( meta = (BindWidget) )

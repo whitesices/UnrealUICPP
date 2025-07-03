@@ -11,7 +11,8 @@ public class SlimInventory : ModuleRules
 		PublicIncludePaths.AddRange(
 			new string[] {
 				// ... add public include paths required here ...
-			}
+				//"SlimInventory"
+            }
 			);
 				
 		
@@ -26,6 +27,8 @@ public class SlimInventory : ModuleRules
 			new string[]
 			{
 				"Core",
+				"NetCore",//引入网络核心模块
+				"StructUtils"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);

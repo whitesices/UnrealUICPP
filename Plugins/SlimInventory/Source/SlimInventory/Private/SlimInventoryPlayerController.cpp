@@ -83,6 +83,20 @@ void ASlimInventoryPlayerController::PrimaryInetract()
 {
 	//打印相应的日志输出
 	UE_LOG( LogSlimInventory , Log , TEXT("Primary interact") );
+	//检查有效性
+	if ( !ThisHitActor.IsValid() )
+	{
+		return;
+	}
+
+	USlimInventoryItemComponent* ItemComponent = ThisHitActor->FindComponentByClass<USlimInventoryItemComponent>();
+	//检查ItemComponent 和 InventoryComponent
+	if (!IsValid(ItemComponent) || !InventoryComp.IsValid())
+	{
+		return;
+	}
+	//调用添加条目
+	InventoryComp->TryAddItem(ItemComponent);
 }
 
 void ASlimInventoryPlayerController::CreateHUDWidget()
