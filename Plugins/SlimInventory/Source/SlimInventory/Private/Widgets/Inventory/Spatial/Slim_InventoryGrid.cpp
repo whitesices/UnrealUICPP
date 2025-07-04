@@ -9,11 +9,29 @@
 #include "Components/CanvasPanelSlot.h"
 #include "Blueprint/WidgetLayoutLibrary.h"
 
+#include "InventoryManagement/Components/SlimInventoryComponent.h"
+#include "Items/SlimInventoryItem.h"
+#include "InventoryManagement/Utils/SlimInventoryStatics.h"
+
 void USlim_InventoryGrid::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 	//调用初始化网格函数
 	ConstructGrid();
+
+	//获取绑定的InventoryComponent
+	InventoryComponent = USlimInventoryStatics::GetInventoryComponent( GetOwningPlayer() );
+	InventoryComponent->OnItemAdded.AddDynamic( this ,&USlim_InventoryGrid::AddItem);
+}
+
+void USlim_InventoryGrid::AddItem(USlimInventoryItem* Item)
+{
+	if (!MatchesCategory(Item))
+	{
+		return;
+	}
+
+	UE_LOG( LogTemp , Warning , TEXT("InventoryGrid:AddItem"));
 }
 
 void USlim_InventoryGrid::ConstructGrid()
@@ -42,4 +60,9 @@ void USlim_InventoryGrid::ConstructGrid()
 			GridSlots.Add(GridSlot);
 		}
 	}
+}
+
+bool USlim_InventoryGrid::MatchesCategory(const USlimInventoryItem* Item) const
+{
+	return Item->GetItemManifest().GetItemCatgory() == ItemCatgory;
 }

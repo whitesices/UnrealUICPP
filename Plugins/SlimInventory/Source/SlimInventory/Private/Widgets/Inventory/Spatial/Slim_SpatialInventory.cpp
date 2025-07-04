@@ -22,7 +22,10 @@ void USlim_SpatialInventory::NativeOnInitialized()
 
 FSlimSlotAvailabilityResult USlim_SpatialInventory::HasRoomForItem(USlimInventoryItemComponent* ItemComponent) const
 {
-	return FSlimSlotAvailabilityResult();
+	/*return FSlimSlotAvailabilityResult();*/
+	FSlimSlotAvailabilityResult Result;
+	Result.TotalRoomToFill = 1;
+	return Result;
 }
 
 void USlim_SpatialInventory::ShowEquippables()

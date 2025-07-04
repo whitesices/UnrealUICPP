@@ -10,6 +10,7 @@
 
 class UInventoryGridSlot;
 class UCanvasPanel;
+class USlimInventoryComponent;
 
 /**
  * 
@@ -25,6 +26,10 @@ public:
 	//获取小部件的类型
 	EInventory_ItemCategory GetItemCategory() const { return ItemCatgory; }
 
+	//定义添加小部件的函数
+	UFUNCTION()
+	void AddItem(USlimInventoryItem* Item);
+
 private:
 	//自定义初始化Grid函数
 	void ConstructGrid();
@@ -33,6 +38,9 @@ private:
 	//声明小部件的类型
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"), Category = "Inventory")
 	EInventory_ItemCategory ItemCatgory;
+
+	//声明指向InventoryComponent的指针
+	TWeakObjectPtr<USlimInventoryComponent> InventoryComponent;
 
 	//声明相应需要绑定的参数
 	UPROPERTY()
@@ -51,4 +59,7 @@ private:
 	
 	UPROPERTY( EditAnywhere , Category="Inventory")
 	float TileSize;
+
+	//定义是否匹配属性的方法
+	bool MatchesCategory( const USlimInventoryItem* Item ) const;
 };

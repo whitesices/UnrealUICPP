@@ -8,7 +8,7 @@
 #include "Net/UnrealNetwork.h"
 
 // Sets default values for this component's properties
-USlimInventoryComponent::USlimInventoryComponent()
+USlimInventoryComponent::USlimInventoryComponent():InventoryList(this)
 {
 
 	PrimaryComponentTick.bCanEverTick = false;
@@ -63,6 +63,11 @@ void USlimInventoryComponent::Server_AddNewItem_Implementation( USlimInventoryIt
 {
 	USlimInventoryItem* NewItem = InventoryList.AddEntry(ItemComponent);
 	// TODO: Tell the Item Component to destroy its owning actor.
+	//判断获取对象的有效性
+	if ( GetOwner()->GetNetMode() == NM_ListenServer || GetOwner()->GetNetMode() == NM_Standalone )
+	{
+		OnItemAdded.Broadcast(NewItem);
+	}
 }
 
 void USlimInventoryComponent::Server_AddStacksToItem_Implementation( USlimInventoryItemComponent* ItemComponent, int32 StackCount, int32 Remainder )

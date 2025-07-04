@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "Types/InventoryGridTypes.h"
 #include "StructUtils/InstancedStruct.h"
+//引入gameplayTag
+#include "GameplayTagContainer.h"
 
 #include "SlimItemManifest.generated.h"
 /**
@@ -25,8 +27,18 @@ struct SLIMINVENTORY_API FSlimItemManifest
 		return ItemCategory;
 	}
 
+	//返回物品的标签
+	FGameplayTag GetItemType() const
+	{
+		return ItemType;
+	}
+
 private:
 	//定义选择的属性
 	UPROPERTY( EditAnywhere , Category = "Inventory" )
 	EInventory_ItemCategory ItemCategory{ EInventory_ItemCategory::None };
+
+	//定义物品的标签
+	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	FGameplayTag ItemType;
 };

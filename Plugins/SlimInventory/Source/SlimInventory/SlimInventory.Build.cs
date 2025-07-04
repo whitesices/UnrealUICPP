@@ -28,7 +28,8 @@ public class SlimInventory : ModuleRules
 			{
 				"Core",
 				"NetCore",//引入网络核心模块
-				"StructUtils"
+				"StructUtils",
+				"GameplayTags",//引入GameplayTags模块
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
