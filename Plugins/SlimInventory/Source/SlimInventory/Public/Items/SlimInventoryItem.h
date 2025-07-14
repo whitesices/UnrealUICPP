@@ -50,3 +50,14 @@ private:
 	UPROPERTY( VisibleAnywhere , meta = ( BaseStruct = "/Script/SlimInventory.SlimItemManifest" ) , Replicated )
 	FInstancedStruct  ItemManiFest;
 };
+
+//声明模板函数获取对应的FragmentType
+template<typename FragmentType>
+const FragmentType* GetFragment( const USlimInventoryItem* Item , const FGameplayTag& Tag )
+{
+	//判断Item是否有效
+	if (!IsValid(Item)) return nullptr;
+
+	const FSlimItemManifest& Manifest = Item->GetItemManifest();
+	return Manifest.GetFragmentOfTypeWithTag<FragmentType>(Tag);
+}

@@ -14,6 +14,7 @@
  */
 
 class USlimInventoryItem;
+struct FSlimItemFragment;
 
 USTRUCT(BlueprintType)
 struct SLIMINVENTORY_API FSlimItemManifest
@@ -33,6 +34,10 @@ struct SLIMINVENTORY_API FSlimItemManifest
 		return ItemType;
 	}
 
+	//声明一个模板函数 去存储不同类型
+	template<typename T> requires std::derived_from< T , FSlimItemFragment >
+	const T* GetFragmentOfTypeWithTag( const FGameplayTag& FragmentTag ) const;
+
 private:
 	//定义选择的属性
 	UPROPERTY( EditAnywhere , Category = "Inventory" )
@@ -41,4 +46,28 @@ private:
 	//定义物品的标签
 	UPROPERTY( EditAnywhere , Category = "Inventory" )
 	FGameplayTag ItemType;
+
+	//声明小部件片段
+	UPROPERTY( EditAnywhere , Category="Inventory" , meta=(ExcludeBaseStruct) )
+	TArray< TInstancedStruct<FSlimItemFragment> > Fragments;
 };
+
+template<typename T> requires std::derived_from< T, FSlimItemFragment >
+inline const T* FSlimItemManifest::GetFragmentOfTypeWithTag(const FGameplayTag& FragmentTag) const
+{
+	//遍历查询对应的Tag
+	for ( const TInstancedStruct<FSlimItemFragment>& Fragment : Fragments )
+	{
+		if ( const T* FragmentPtr = Fragment.GetPtr<T>() )
+		{
+			if (!FragmentPtr->GetFragmentTag().MatchesTagExact(FragmentTag))
+			{
+				continue;
+			}
+
+			return FragmentPtr;
+		}
+	 }
+
+	return nullptr;
+}

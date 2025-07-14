@@ -8,6 +8,9 @@
 #include "Components/Button.h"
 #include "Items/Components/SlimInventoryItemComponent.h"
 
+#include "SlimInventory.h"
+#include "InventoryManagement/Utils/SlimInventoryStatics.h"
+
 void USlim_SpatialInventory::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
@@ -23,9 +26,21 @@ void USlim_SpatialInventory::NativeOnInitialized()
 FSlimSlotAvailabilityResult USlim_SpatialInventory::HasRoomForItem(USlimInventoryItemComponent* ItemComponent) const
 {
 	/*return FSlimSlotAvailabilityResult();*/
-	FSlimSlotAvailabilityResult Result;
-	Result.TotalRoomToFill = 1;
-	return Result;
+	//FSlimSlotAvailabilityResult Result;
+	//Result.TotalRoomToFill = 1;
+	//return Result;
+	switch ( USlimInventoryStatics::GetItemCategoryFromItemComp(ItemComponent) )
+	{
+		case EInventory_ItemCategory::Equippable:
+			return Grid_Equippables->HasRoomForItem(ItemComponent);
+		case EInventory_ItemCategory::Consumable:
+			return Grid_Consumables->HasRoomForItem(ItemComponent);
+		case EInventory_ItemCategory::Craftable:
+			return Grid_Craftables->HasRoomForItem(ItemComponent);
+		default:
+			UE_LOG( LogSlimInventory , Error , TEXT("Itemcomponent doesn`t have a valid Item Category") );
+			return FSlimSlotAvailabilityResult();
+	}
 }
 
 void USlim_SpatialInventory::ShowEquippables()

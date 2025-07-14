@@ -12,6 +12,13 @@ class UInventoryGridSlot;
 class UCanvasPanel;
 class USlimInventoryComponent;
 
+class USlimInventoryItemComponent;
+struct FSlimItemManifest;
+
+struct FSlimImageFragment;
+struct FSlimGridFragment;
+class USlimSlottedItem;
+
 /**
  * 
  */
@@ -25,6 +32,11 @@ public:
 	virtual void NativeOnInitialized() override;
 	//获取小部件的类型
 	EInventory_ItemCategory GetItemCategory() const { return ItemCatgory; }
+	//获取小部件是否还有空间的结果函数、
+	FSlimSlotAvailabilityResult HasRoomForItem( const USlimInventoryItemComponent* ItemComponent );
+
+	//添加bItem索引
+	/*void AddItemToIndices(const FSlimSlotAvailabilityResult& Result , USlimInventoryItem* NewItem );*/
 
 	//定义添加小部件的函数
 	UFUNCTION()
@@ -49,6 +61,10 @@ private:
 	UPROPERTY( EditAnywhere , Category = "Inventory" )
 	TSubclassOf<UInventoryGridSlot> GridSlotClass;
 
+	//声明SlotItem
+	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	TSubclassOf<USlimSlottedItem> SlottedItemClass;
+
 	UPROPERTY( meta=(BindWidget) )
 	TObjectPtr<UCanvasPanel> CanvasPanel;
 
@@ -62,4 +78,20 @@ private:
 
 	//定义是否匹配属性的方法
 	bool MatchesCategory( const USlimInventoryItem* Item ) const;
+	//声明私有的获取结果都函数
+	FSlimSlotAvailabilityResult HasRoomForItem(const USlimInventoryItem* Item);
+	FSlimSlotAvailabilityResult HasRoomForItem(const FSlimItemManifest& Manifest);
+
+	//添加bItem索引
+	void AddItemToIndices(const FSlimSlotAvailabilityResult& Result, USlimInventoryItem* NewItem);
+	//在索引里添加
+	void AddItemAtIndex(USlimInventoryItem* Item , const int32 index , const bool bStackable , const int32 StackAmount );
+	//绘制尺寸
+	FVector2D GetDrawSize( const FSlimGridFragment* GridFragment ) const;
+	//设置插槽小部件的图片
+	void SetSlottedItemImage(  const USlimSlottedItem* SlottedItem , const FSlimGridFragment* GridFragment , const FSlimImageFragment* ImageFragment ) const;
+
+	//创建插槽小组件
+	USlimSlottedItem* CreateSlottedItem(  USlimInventoryItem* Item , const bool bStackable , const int32 StackAmount , const FSlimGridFragment* GridFragment , const FSlimImageFragment* ImageFragment , const int32 index );
+
 };
