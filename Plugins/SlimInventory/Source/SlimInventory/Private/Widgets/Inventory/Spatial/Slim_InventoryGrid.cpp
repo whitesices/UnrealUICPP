@@ -51,23 +51,27 @@ void USlim_InventoryGrid::AddItemToIndices(const FSlimSlotAvailabilityResult& Re
 	for (const auto& Avialability : Result.SlotAvailiabilites )
 	{
 		AddItemAtIndex( NewItem , Avialability.SlotIndex , Result.bStackable , Avialability.AmountToFill );//根据索引添加小部件
+		UpdateGridSlots( NewItem , Avialability.SlotIndex );
 	}
 
 }
 
 void USlim_InventoryGrid::AddItemAtIndex(USlimInventoryItem* Item, const int32 index, const bool bStackable, const int32 StackAmount)
 {
+	//Get Grid Fragment so we know how many grid spaces the item takes
 	const FSlimGridFragment* GridFragment = GetFragment<FSlimGridFragment>( Item , FragmentTags::FragmentTags_GridFragment);
+	//Get Image Fragment so we have the icon to display
 	const FSlimImageFragment* ImageFragment = GetFragment<FSlimImageFragment>( Item , FragmentTags::FragmentTags_ImageFragment );
 
 	//判断有效性
 	if (!GridFragment || !ImageFragment) return;
-
+	//Create a widget to add to the grid
 	USlimSlottedItem* SlottedItem = CreateSlottedItem( Item , bStackable , StackAmount , GridFragment , ImageFragment , index );
 
 	//Add the slotted item to the canvas panel
-
+	AddSlottedItemToCanvas( index , GridFragment , SlottedItem );
 	//Store the new widget in a container
+	SlottedItems.Add( index , SlottedItem );
 }
 
 FVector2D USlim_InventoryGrid::GetDrawSize(const FSlimGridFragment* GridFragment) const
@@ -98,6 +102,27 @@ USlimSlottedItem* USlim_InventoryGrid::CreateSlottedItem(USlimInventoryItem* Ite
 	SlottedItem->SetGridIndex(index);
 
 	return SlottedItem;
+}
+
+void USlim_InventoryGrid::AddSlottedItemToCanvas(const int32 Index, const FSlimGridFragment* GridFragment, USlimSlottedItem* SlottedItem) const
+{
+	CanvasPanel->AddChild(SlottedItem);
+	UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot( SlottedItem );
+	CanvasSlot->SetSize( GetDrawSize(GridFragment) );//设置相应的尺寸
+	const FVector2D DrawPos = UInventoryWidgetUtils::GetPositionFromIndex( Index , Columns ) * TileSize;
+	const FVector2D DrawPosWithPadding = DrawPos + FVector2D( GridFragment->GetGridPadding() );
+	//设置slottedItem在画布上的位置
+	CanvasSlot->SetPosition( DrawPosWithPadding );
+}
+
+void USlim_InventoryGrid::UpdateGridSlots(USlimInventoryItem* NewItem, const int32 Index)
+{
+	//检查网格插槽索引的有效性
+	check( GridSlots.IsValidIndex(Index) );
+
+	//声明GridSlot
+	UInventoryGridSlot* GridSlot = GridSlots[Index];
+	GridSlot->SetOccupiedTexture();//设置网格插槽被占用的状态
 }
 
 void USlim_InventoryGrid::AddItem(USlimInventoryItem* Item)

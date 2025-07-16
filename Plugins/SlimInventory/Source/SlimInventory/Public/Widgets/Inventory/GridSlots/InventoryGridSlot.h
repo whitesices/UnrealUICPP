@@ -8,6 +8,17 @@
 
 class UImage;
 
+//新建新的插槽图片状态
+UENUM(BlueprintType)
+enum class ESlimGridSlotState : uint8
+{
+	Unoccupied,
+	Occupied,
+	Selected,
+	GrayedOut
+};
+
+
 /**
  * 
  */
@@ -20,10 +31,32 @@ public:
 	void SetTileIndex(int32 Index) { TileIndex = Index; }
 	//获取TileIndex
 	int32 GetTileIndex() { return TileIndex; }
+
+	//获取网格插槽状态
+	ESlimGridSlotState GetGridSlotState() const { return GridSlotState; }
+
+	//设置各个图片状态
+	void SetOccupiedTexture();
+	void SetUnoccupiedTexture();
+	void SetSelectedTexture();
+	void SetGrayedOutTexture();
 	
 private:
 	int32 TileIndex;
 
 	UPROPERTY( meta=(BindWidget) )
 	TObjectPtr<UImage> Image_GridSlot;
+
+	//声明各个网格的刷新状态
+	UPROPERTY( EditAnywhere , Category="Inventory" )
+	FSlateBrush Brush_Unoccupied;
+	UPROPERTY( EditAnywhere , Category="Inventory" )
+	FSlateBrush Brush_Occupied;
+	UPROPERTY( EditAnywhere , Category="Inventory")
+	FSlateBrush Brush_Selected;
+	UPROPERTY( EditAnywhere , Category="Inventory")
+	FSlateBrush Brush_GrayedOut;
+
+	//声明存储网格状态的变量
+	ESlimGridSlotState GridSlotState;
 };

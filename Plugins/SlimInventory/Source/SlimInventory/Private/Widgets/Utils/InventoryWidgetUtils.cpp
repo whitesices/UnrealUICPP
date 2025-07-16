@@ -8,3 +8,8 @@ int32 UInventoryWidgetUtils::GetInventoryIndexFromPosition(const FIntPoint& Posi
 {
 	return Position.X + Position.Y * Columns;
 }
+
+FIntPoint UInventoryWidgetUtils::GetPositionFromIndex(const int32 Index, const int32 Columns)
+{
+	return FIntPoint( Index % Columns , Index / Columns );
+}

@@ -65,6 +65,10 @@ private:
 	UPROPERTY( EditAnywhere , Category = "Inventory" )
 	TSubclassOf<USlimSlottedItem> SlottedItemClass;
 
+	//建立slottedItem的键值对映射
+	UPROPERTY( VisibleAnywhere , Category = "Inventory")
+	TMap< int32, TObjectPtr<USlimSlottedItem> > SlottedItems;
+
 	UPROPERTY( meta=(BindWidget) )
 	TObjectPtr<UCanvasPanel> CanvasPanel;
 
@@ -93,5 +97,10 @@ private:
 
 	//创建插槽小组件
 	USlimSlottedItem* CreateSlottedItem(  USlimInventoryItem* Item , const bool bStackable , const int32 StackAmount , const FSlimGridFragment* GridFragment , const FSlimImageFragment* ImageFragment , const int32 index );
+	//声明创建将slottedItem添加到主画布的函数方法
+	void AddSlottedItemToCanvas( const int32 Index , const FSlimGridFragment* GridFragment , USlimSlottedItem* SlottedItem) const;
+
+	//更新GridSlots
+	void UpdateGridSlots( USlimInventoryItem* NewItem , const int32 Index );
 
 };

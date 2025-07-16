@@ -16,5 +16,6 @@ class SLIMINVENTORY_API UInventoryWidgetUtils : public UBlueprintFunctionLibrary
 
 public:
 	static int32 GetInventoryIndexFromPosition( const FIntPoint& Position , const int32 Columns );
-	
+	//通过索引获取位置信息
+	static FIntPoint GetPositionFromIndex( const int32 Index , const int32 Columns );
 };
