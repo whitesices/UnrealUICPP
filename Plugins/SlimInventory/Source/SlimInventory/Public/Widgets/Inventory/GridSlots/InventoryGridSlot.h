@@ -6,6 +6,7 @@
 #include "Blueprint/UserWidget.h"
 #include "InventoryGridSlot.generated.h"
 
+class USlimInventoryItem;
 class UImage;
 
 //新建新的插槽图片状态
@@ -35,6 +36,19 @@ public:
 	//获取网格插槽状态
 	ESlimGridSlotState GetGridSlotState() const { return GridSlotState; }
 
+	//设置或者获取相应的参数
+	TWeakObjectPtr<USlimInventoryItem> GetInventoryItem() const { return InventoryItem; }
+	void SetSlimInventoryItem( USlimInventoryItem* Item);
+
+	int32 GetStackCount() const { return StackCount; }
+	void SetStackCount(int32 Count) { StackCount = Count; }
+
+	int32 GetUpperLeftIndex() const { return UpperLeftIndex; }
+	void SetUpperLeftIndex(int32 index) { UpperLeftIndex = index; }
+
+	bool GetIsAvailable() const { return bAvailable; }
+	void SetAvailable(bool bIsAvailble) { bAvailable = bIsAvailble; }
+
 	//设置各个图片状态
 	void SetOccupiedTexture();
 	void SetUnoccupiedTexture();
@@ -43,6 +57,11 @@ public:
 	
 private:
 	int32 TileIndex;
+	//声明堆叠参数
+	int32 StackCount;
+	int32 UpperLeftIndex{INDEX_NONE};
+	TWeakObjectPtr<USlimInventoryItem> InventoryItem;
+	bool bAvailable;//是否有效
 
 	UPROPERTY( meta=(BindWidget) )
 	TObjectPtr<UImage> Image_GridSlot;

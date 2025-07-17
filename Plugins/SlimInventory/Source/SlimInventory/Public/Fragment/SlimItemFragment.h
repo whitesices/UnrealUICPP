@@ -68,3 +68,23 @@ private:
 	UPROPERTY( EditAnywhere , Category = "Inventory")
 	FVector2D IconDimensions{ 44.f , 44.f };
 };
+
+//声明堆叠片段
+USTRUCT(BlueprintType)
+struct FSlimStackFragment : public FSlimItemFragment
+{
+	GENERATED_BODY()
+public:
+	//定义获取尺寸的大小
+	int32 GetMaxStackSize() const { return MaxStackSize; }
+	//定义获取栈计数
+	int32 GetStackCount() const { return StackCount; }
+private:
+
+	//定义最大栈大小
+	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	int32 MaxStackSize{1};
+
+	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	int32 StackCount{1};
+};

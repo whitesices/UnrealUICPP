@@ -51,7 +51,7 @@ void USlim_InventoryGrid::AddItemToIndices(const FSlimSlotAvailabilityResult& Re
 	for (const auto& Avialability : Result.SlotAvailiabilites )
 	{
 		AddItemAtIndex( NewItem , Avialability.SlotIndex , Result.bStackable , Avialability.AmountToFill );//根据索引添加小部件
-		UpdateGridSlots( NewItem , Avialability.SlotIndex );
+		UpdateGridSlots( NewItem , Avialability.SlotIndex , Result.bStackable , Avialability.AmountToFill );//更新网格数据
 	}
 
 }
@@ -101,6 +101,11 @@ USlimSlottedItem* USlim_InventoryGrid::CreateSlottedItem(USlimInventoryItem* Ite
 	//设置网格索引
 	SlottedItem->SetGridIndex(index);
 
+	//设置是否可以堆叠,并显示相应的文本
+	SlottedItem->SetIsStackable( bStackable );
+	const int32 StackUpdateAmount = bStackable ? StackAmount : 0;
+	SlottedItem->UpdateStackCount(StackUpdateAmount);
+
 	return SlottedItem;
 }
 
@@ -115,15 +120,59 @@ void USlim_InventoryGrid::AddSlottedItemToCanvas(const int32 Index, const FSlimG
 	CanvasSlot->SetPosition( DrawPosWithPadding );
 }
 
-void USlim_InventoryGrid::UpdateGridSlots(USlimInventoryItem* NewItem, const int32 Index)
+void USlim_InventoryGrid::UpdateGridSlots(USlimInventoryItem* NewItem, const int32 Index, bool bStackableItem, const int32 StackAmount)
 {
 	//检查网格插槽索引的有效性
-	check( GridSlots.IsValidIndex(Index) );
+	check(GridSlots.IsValidIndex(Index));
 
-	//声明GridSlot
-	UInventoryGridSlot* GridSlot = GridSlots[Index];
-	GridSlot->SetOccupiedTexture();//设置网格插槽被占用的状态
+	////声明GridSlot
+	//UInventoryGridSlot* GridSlot = GridSlots[Index];
+	//GridSlot->SetOccupiedTexture();//设置网格插槽被占用的状态
+
+	//遍历被占用的格子改变相应的选中状态
+	//const FSlimGridFragment* GridFragment = GetFragment<FSlimGridFragment>(NewItem, FragmentTags::FragmentTags_GridFragment);
+	////判断GridFragment是否有效
+	//if (!GridFragment) return;
+	//判断是否可以开始堆叠
+	if ( bStackableItem )
+	{
+		GridSlots[Index]->SetStackCount(StackAmount);//将堆叠参数传入
+	}
+
+	//声明一个变量存储GridFragment
+	const FSlimGridFragment* GridFragment = GetFragment<FSlimGridFragment>(NewItem, FragmentTags::FragmentTags_GridFragment);
+	const FIntPoint Dimensions = GridFragment ? GridFragment->GetGridSize() : FIntPoint(1, 1);
+	//遍历更新所占格子的颜色
+	USlimInventoryStatics::ForEach2D(GridSlots, Index, Dimensions, Columns, [&](UInventoryGridSlot* GridSlot)
+	{
+		GridSlot->SetOccupiedTexture();//设置该格子被占用
+		GridSlot->SetSlimInventoryItem(NewItem);//设置新的小部件
+		GridSlot->SetAvailable(false);
+		GridSlot->SetUpperLeftIndex(Index);
+	});
 }
+
+//void USlim_InventoryGrid::UpdateGridSlots(USlimInventoryItem* NewItem, const int32 Index)
+//{
+//	//检查网格插槽索引的有效性
+//	check( GridSlots.IsValidIndex(Index) );
+//
+//	////声明GridSlot
+//	//UInventoryGridSlot* GridSlot = GridSlots[Index];
+//	//GridSlot->SetOccupiedTexture();//设置网格插槽被占用的状态
+//
+//	//遍历被占用的格子改变相应的选中状态
+//	const FSlimGridFragment* GridFragment = GetFragment<FSlimGridFragment>( NewItem , FragmentTags::FragmentTags_GridFragment );
+//	//判断GridFragment是否有效
+//	if (!GridFragment) return;
+//
+//	const FIntPoint Dimensions = GridFragment ? GridFragment->GetGridSize() : FIntPoint( 1, 1 );
+//	//遍历更新所占格子的颜色
+//	USlimInventoryStatics::ForEach2D(GridSlots, Index, Dimensions, Columns, []( UInventoryGridSlot* GridSlot)
+//	{
+//		GridSlot->SetOccupiedTexture();//设置该格子被占用
+//	});
+//}
 
 void USlim_InventoryGrid::AddItem(USlimInventoryItem* Item)
 {
@@ -147,9 +196,9 @@ void USlim_InventoryGrid::ConstructGrid()
 	GridSlots.Reserve( Rows * Columns );
 
 	//循环遍历
-	for (int32 i = 0 ; i < Columns; ++i )
+	for (int32 j = 0 ; j < Rows; ++j )
 	{
-		for (int32 j = 0 ; j < Rows ; ++j )
+		for (int32 i = 0 ; i < Columns; ++i )
 		{
 			//创建相应的网格
 			UInventoryGridSlot* GridSlot = CreateWidget<UInventoryGridSlot>(this , GridSlotClass);
@@ -183,13 +232,24 @@ FSlimSlotAvailabilityResult USlim_InventoryGrid::HasRoomForItem(const USlimInven
 FSlimSlotAvailabilityResult USlim_InventoryGrid::HasRoomForItem(const FSlimItemManifest& Manifest)
 {
 	FSlimSlotAvailabilityResult Result;
-	Result.TotalRoomToFill = 1;
+	/*Result.TotalRoomToFill = 1;*/
+	Result.TotalRoomToFill = 7;
+	Result.bStackable = true;
 
 	//申明插槽可见性
 	FSlimInventorySlotVisibility SlotVisbility;
-	SlotVisbility.AmountToFill = 1;
+	/*SlotVisbility.AmountToFill = 1;*/
+	SlotVisbility.AmountToFill = 2;
 	SlotVisbility.SlotIndex = 0;
 	
 	Result.SlotAvailiabilites.Add( MoveTemp(SlotVisbility) );
+
+	//声明插槽可见性
+	FSlimInventorySlotVisibility SlotAvailability2;
+	SlotAvailability2.AmountToFill = 5;
+	SlotAvailability2.SlotIndex = 1;
+	Result.SlotAvailiabilites.Add(MoveTemp(SlotAvailability2));
+
+
 	return Result;
 }

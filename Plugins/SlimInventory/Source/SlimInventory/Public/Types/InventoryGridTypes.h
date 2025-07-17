@@ -28,7 +28,7 @@ struct FSlimInventorySlotVisibility
 	//构造函数
 	FSlimInventorySlotVisibility() {}
 	//有参构造函数
-	FSlimInventorySlotVisibility( int32 ItemIndex , int32 Room , bool bHasItem ):SlotIndex(ItemIndex),AmountToFill(ItemIndex),bItemAtIndex(bHasItem) {}
+	FSlimInventorySlotVisibility( int32 ItemIndex , int32 Room , bool bHasItem ):SlotIndex(ItemIndex),AmountToFill(Room),bItemAtIndex(bHasItem) {}
 
 	//声明插槽可见性属性
 	int32 SlotIndex = INDEX_NONE;

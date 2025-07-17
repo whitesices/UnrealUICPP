@@ -8,6 +8,7 @@
 
 class USlimInventoryItem;
 class UImage;
+class UTextBlock;
 
 /**
  * 
@@ -40,11 +41,18 @@ public:
 	//设置自定义的InventoryItem
 	void SetInventoryItem( USlimInventoryItem* Item );
 	USlimInventoryItem* GetInventoryItem() const { return InventoryItem.Get(); }
+
+	//更新栈文本数据
+	void UpdateStackCount( int32 StackCount );
 	
 private:
 	//声明图片资源
 	UPROPERTY( meta=(BindWidget) )
 	TObjectPtr<UImage> Image_Icon;
+
+	//声明文本数据进行绑定
+	UPROPERTY( meta=(BindWidget) )
+	TObjectPtr<UTextBlock> Text_StackCount;
 
 	//相应的参数
 	int32 GridIndex;

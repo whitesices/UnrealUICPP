@@ -101,6 +101,7 @@ private:
 	void AddSlottedItemToCanvas( const int32 Index , const FSlimGridFragment* GridFragment , USlimSlottedItem* SlottedItem) const;
 
 	//更新GridSlots
-	void UpdateGridSlots( USlimInventoryItem* NewItem , const int32 Index );
+	/*void UpdateGridSlots( USlimInventoryItem* NewItem , const int32 Index );*/
+	void UpdateGridSlots(USlimInventoryItem* NewItem, const int32 Index , bool bStackableItem , const int32 StackAmount );
 
 };
