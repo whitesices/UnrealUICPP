@@ -20,6 +20,7 @@
 #include "Widgets/Inventory/SlottedItems/SlimSlottedItem.h"
 #include "Fragment/SlimItemFragment.h"
 #include "Fragment/SlimFragmentTag.h"
+#include "Items/SlimInventoryItem.h"
 
 void USlim_InventoryGrid::NativeOnInitialized()
 {
@@ -152,6 +153,75 @@ void USlim_InventoryGrid::UpdateGridSlots(USlimInventoryItem* NewItem, const int
 	});
 }
 
+bool USlim_InventoryGrid::IsIndexClaimed(const TSet<int32>& CheckedIndices, const int32 index) const
+{
+	return CheckedIndices.Contains(index);//检查索引是否存在或者被占用
+}
+
+bool USlim_InventoryGrid::HasRoomAtIndex(const UInventoryGridSlot* GridSlot, const FIntPoint& Dimensions, const TSet<int32>& CheckedIndices, TSet<int32>& OutTentativelyClaimed)
+{
+	//空间是否呗沾满
+	bool bHasRoomAtIndex = true;//声明一个变量存储标志
+	//遍历网格插槽数据
+	USlimInventoryStatics::ForEach2D(GridSlots, GridSlot->GetIndex(), Dimensions, Columns, [&](const UInventoryGridSlot* SubGridSlot)
+	{
+		if (CheckSlotConstraints(GridSlot ,SubGridSlot , CheckedIndices , OutTentativelyClaimed ))
+		{
+			OutTentativelyClaimed.Add(SubGridSlot->GetIndex());
+		}
+		else
+		{
+			bHasRoomAtIndex = false;
+		}
+
+
+	});
+	
+
+	return bHasRoomAtIndex;//返回相应的状态
+}
+
+FIntPoint USlim_InventoryGrid::GetItemDimensions(const FSlimItemManifest& Manifest) const
+{
+	const FSlimGridFragment* GridFragment = Manifest.GetFragmentOfType<FSlimGridFragment>();
+	return GridFragment ? GridFragment->GetGridSize() : FIntPoint(1 ,1 ) ;
+}
+
+bool USlim_InventoryGrid::CheckSlotConstraints(const UInventoryGridSlot* GridSlot, const UInventoryGridSlot* SubGridSlot, const TSet<int32>& CheckedIndecies, TSet<int32>& OutTentativelyClaimed, const FGameplayTag& ItemType) const
+{
+			//Index claimed?
+	if (IsIndexClaimed(CheckedIndecies, SubGridSlot->GetIndex())) return false;
+			//Has valid item?
+	if (!HasValidItem(SubGridSlot))
+	{
+		OutTentativelyClaimed.Add( SubGridSlot->GetIndex() );
+		return true;
+	}
+	//Is this Grid Slot an upper left slot?
+	if (!IsUpperLeftSlot(GridSlot, SubGridSlot)) return false;
+			//Is this item the same type as the we`re trying to add?
+	if (!DoesItemTypeMatch(SubItem, ItemType)) return false;
+			// If so , is this a stackable item?
+			// If stackable , is this slot at the max stack size already?
+
+	return false;
+}
+
+bool USlim_InventoryGrid::HasValidItem(const UInventoryGridSlot* GridSlot) const
+{
+	return GridSlot->GetInventoryItem().IsValid();
+}
+
+bool USlim_InventoryGrid::IsUpperLeftSlot(const UInventoryGridSlot* GridSlot, const UInventoryGridSlot* SubGridSlot) const
+{
+	return SubGridSlot->GetUpperLeftIndex() == GridSlot->GetIndex();
+}
+
+bool USlim_InventoryGrid::DoesItemTypeMatch(const USlimInventoryItem* SubItem, const FGameplayTag& ItemType) const
+{
+	return SubItem->GetItemManifest().GetItemType().MatchesTagExact(ItemType);
+}
+
 //void USlim_InventoryGrid::UpdateGridSlots(USlimInventoryItem* NewItem, const int32 Index)
 //{
 //	//检查网格插槽索引的有效性
@@ -250,6 +320,50 @@ FSlimSlotAvailabilityResult USlim_InventoryGrid::HasRoomForItem(const FSlimItemM
 	SlotAvailability2.SlotIndex = 1;
 	Result.SlotAvailiabilites.Add(MoveTemp(SlotAvailability2));
 
+	//Determine if the item is stackable
+	const FSlimStackFragment* StackableFragment = Manifest.GetFragmentOfType<FSlimStackFragment>();
+	Result.bStackable = StackableFragment != nullptr;//判断获取的片段是否有效
+	//Determine how many stacks to add.
+	const int32 MaxStackSize = StackableFragment ? StackableFragment->GetMaxStackSize() : 1;//获取最大堆叠数量
+	int32 AmountToFill = StackableFragment ? StackableFragment->GetStackCount() : 1;//获取堆叠数量
+	//声明一个集合存储已经检查的索引
+	TSet<int32> CheckedIndices;
+	//For each Grid Slot:
+	for ( const auto& GridSlot : GridSlots )
+	{
+		//if we don`t have anymore to fill , break out of the loop early.
+		if (AmountToFill == 0) break;
+		//Is this index claimed yet?
+		if ( IsIndexClaimed(CheckedIndices, GridSlot->GetIndex()) ) continue;
+
+		//Can this item fit here?( i.e is it out of grid bounds?)
+		//if (!HasRoomAtIndex( GridSlot , GetItemDimensions(Manifest) ) )
+		//{
+		//	continue;//if not enough room , continue to the next slot.
+		//}
+		//声明一个暂时变量存储
+		TSet<int32> TentativeCheckedIndices;
+		if ( !HasRoomAtIndex( GridSlot , GetItemDimensions(Manifest) , CheckedIndices , TentativeCheckedIndices ) )
+		{
+			continue;//if not enough room , continue to the next slot.
+		}
+
+		//Check any other important conditions - ForEach2D over a 2D Range
+		CheckedIndices.Append( TentativeCheckedIndices );
+
+	 }
+	     //if we don`t have anymore to fill , break out of the loop early.
+		//Is this index claimed ye?
+		//Can this item fit here?( i.e is it out of grid bounds?)
+		//Check any other important conditions - ForEach2D over a 2D Range
+	        //Index claimed?
+	        //Has valid item?
+	        //Is this item the same type as the we`re trying to add?
+			// If so , is this a stackable item?
+			// If stackable , is this slot at the max stack size already?
+	    //How much to fill?
+	    //Update the amount left to fill.
+    //How much is the Remainder?
 
 	return Result;
 }

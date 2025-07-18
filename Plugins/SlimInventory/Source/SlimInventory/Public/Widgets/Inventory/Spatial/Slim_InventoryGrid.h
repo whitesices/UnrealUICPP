@@ -11,6 +11,7 @@
 class UInventoryGridSlot;
 class UCanvasPanel;
 class USlimInventoryComponent;
+class USlimInventoryItem;
 
 class USlimInventoryItemComponent;
 struct FSlimItemManifest;
@@ -104,4 +105,24 @@ private:
 	/*void UpdateGridSlots( USlimInventoryItem* NewItem , const int32 Index );*/
 	void UpdateGridSlots(USlimInventoryItem* NewItem, const int32 Index , bool bStackableItem , const int32 StackAmount );
 
+	//声明一个函数来判断索引存在判断
+	bool IsIndexClaimed( const TSet<int32>& CheckedIndices , const int32 index) const;
+
+	//声明一个函数根据索引判断是否还有空间
+	/*bool HasRoomAtIndex( UInventoryGridSlot* GridSlot , const FIntPoint& Dimensions);*/
+	bool HasRoomAtIndex(const UInventoryGridSlot* GridSlot, const FIntPoint& Dimensions , const TSet<int32>& CheckedIndices , TSet<int32>& OutTentativelyClaimed );
+	//声明一个函数获取小部件维度位置
+	FIntPoint GetItemDimensions( const FSlimItemManifest& Manifest) const;
+
+	//声明一个函数来检查插槽是否被约束
+	/*bool CheckSlotConstraints( const UInventoryGridSlot* SubGridSlot) const;*/
+	bool CheckSlotConstraints(const UInventoryGridSlot* GridSlot,const UInventoryGridSlot* SubGridSlot , const TSet<int32>& CheckedIndecies , TSet<int32>& OutTentativelyClaimed , const FGameplayTag& ItemType ) const;
+	//声明一个函数判断Item的有效性
+	bool HasValidItem( const UInventoryGridSlot* GridSlot ) const;
+
+	//声明一个函数判断左上角的插槽
+	bool IsUpperLeftSlot( const UInventoryGridSlot* GridSlot , const UInventoryGridSlot* SubGridSlot ) const;
+
+	//声明一个小部件类型匹配
+	bool DoesItemTypeMatch( const USlimInventoryItem* SubItem , const FGameplayTag& ItemType ) const;
 };

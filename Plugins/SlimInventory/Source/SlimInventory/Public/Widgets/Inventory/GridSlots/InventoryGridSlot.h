@@ -33,6 +33,8 @@ public:
 	//获取TileIndex
 	int32 GetTileIndex() { return TileIndex; }
 
+	int32 GetIndex() const { return TileIndex; }
+
 	//获取网格插槽状态
 	ESlimGridSlotState GetGridSlotState() const { return GridSlotState; }
 
