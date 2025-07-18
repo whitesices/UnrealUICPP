@@ -19,6 +19,7 @@ struct FSlimItemManifest;
 struct FSlimImageFragment;
 struct FSlimGridFragment;
 class USlimSlottedItem;
+struct FGameplayTag;
 
 /**
  * 
@@ -110,7 +111,7 @@ private:
 
 	//声明一个函数根据索引判断是否还有空间
 	/*bool HasRoomAtIndex( UInventoryGridSlot* GridSlot , const FIntPoint& Dimensions);*/
-	bool HasRoomAtIndex(const UInventoryGridSlot* GridSlot, const FIntPoint& Dimensions , const TSet<int32>& CheckedIndices , TSet<int32>& OutTentativelyClaimed );
+	bool HasRoomAtIndex(const UInventoryGridSlot* GridSlot, const FIntPoint& Dimensions , const TSet<int32>& CheckedIndices , TSet<int32>& OutTentativelyClaimed , const FGameplayTag& ItemType);
 	//声明一个函数获取小部件维度位置
 	FIntPoint GetItemDimensions( const FSlimItemManifest& Manifest) const;
 

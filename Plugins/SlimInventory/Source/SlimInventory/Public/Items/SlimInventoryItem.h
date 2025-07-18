@@ -44,6 +44,8 @@ public:
 		return ItemManiFest.GetMutable<FSlimItemManifest>();
 	}
 
+	//定义一个判断是否可以堆叠的方法
+	bool IsStackable() const;
 
 private:
 	//声明实例结构体

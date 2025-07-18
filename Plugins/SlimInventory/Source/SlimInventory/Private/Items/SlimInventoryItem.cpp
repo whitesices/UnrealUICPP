@@ -4,6 +4,7 @@
 #include "Items/SlimInventoryItem.h"
 //引入网络管理头文件
 #include "Net/UnrealNetwork.h"
+#include "Fragment/SlimItemFragment.h"
 
 
 void USlimInventoryItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -16,4 +17,10 @@ void USlimInventoryItem::SetItemManifest(const FSlimItemManifest& Manifest)
 {
 	//获取条目清单
 	ItemManiFest = FInstancedStruct::Make<FSlimItemManifest>(Manifest);
+}
+
+bool USlimInventoryItem::IsStackable() const
+{
+	const FSlimStackFragment* stackableFragment = GetItemManifest().GetFragmentOfType<FSlimStackFragment>();
+	return stackableFragment != nullptr;
 }

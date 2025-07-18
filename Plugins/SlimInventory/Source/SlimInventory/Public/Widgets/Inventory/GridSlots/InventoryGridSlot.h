@@ -31,8 +31,9 @@ public:
 	//设置小格子索引
 	void SetTileIndex(int32 Index) { TileIndex = Index; }
 	//获取TileIndex
-	int32 GetTileIndex() { return TileIndex; }
+	int32 GetTileIndex() const { return TileIndex; }
 
+	void SetIndex(int32 Index) { TileIndex = Index; }
 	int32 GetIndex() const { return TileIndex; }
 
 	//获取网格插槽状态
