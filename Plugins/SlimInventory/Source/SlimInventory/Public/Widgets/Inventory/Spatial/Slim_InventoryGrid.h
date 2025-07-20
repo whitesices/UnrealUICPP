@@ -111,13 +111,13 @@ private:
 
 	//声明一个函数根据索引判断是否还有空间
 	/*bool HasRoomAtIndex( UInventoryGridSlot* GridSlot , const FIntPoint& Dimensions);*/
-	bool HasRoomAtIndex(const UInventoryGridSlot* GridSlot, const FIntPoint& Dimensions , const TSet<int32>& CheckedIndices , TSet<int32>& OutTentativelyClaimed , const FGameplayTag& ItemType);
+	bool HasRoomAtIndex(const UInventoryGridSlot* GridSlot, const FIntPoint& Dimensions , const TSet<int32>& CheckedIndices , TSet<int32>& OutTentativelyClaimed , const FGameplayTag& ItemType ,const int32 MaxStackSize);
 	//声明一个函数获取小部件维度位置
 	FIntPoint GetItemDimensions( const FSlimItemManifest& Manifest) const;
 
 	//声明一个函数来检查插槽是否被约束
 	/*bool CheckSlotConstraints( const UInventoryGridSlot* SubGridSlot) const;*/
-	bool CheckSlotConstraints(const UInventoryGridSlot* GridSlot,const UInventoryGridSlot* SubGridSlot , const TSet<int32>& CheckedIndecies , TSet<int32>& OutTentativelyClaimed , const FGameplayTag& ItemType ) const;
+	bool CheckSlotConstraints(const UInventoryGridSlot* GridSlot,const UInventoryGridSlot* SubGridSlot , const TSet<int32>& CheckedIndecies , TSet<int32>& OutTentativelyClaimed , const FGameplayTag& ItemType, const int32 MaxStackSize) const;
 	//声明一个函数判断Item的有效性
 	bool HasValidItem( const UInventoryGridSlot* GridSlot ) const;
 
@@ -126,4 +126,12 @@ private:
 
 	//声明一个小部件类型匹配
 	bool DoesItemTypeMatch( const USlimInventoryItem* SubItem , const FGameplayTag& ItemType ) const;
+
+	//声明一个函数判断是否超出网格边界
+	bool IsInGridBounds( const int32 StartIndex , const FIntPoint& ItemDimensions) const;
+
+	//声明一个函数来确定插槽是否被填满
+	int32 DetermineFilAmountForSlot(const bool bStackable , const int32 MaxStackSize , const int32 AmountToFill , const UInventoryGridSlot* GridSlot) const;
+	//声明一个函数来获取堆叠数量
+	int32 GetStackAmount( const UInventoryGridSlot* GridSlot) const;
 };

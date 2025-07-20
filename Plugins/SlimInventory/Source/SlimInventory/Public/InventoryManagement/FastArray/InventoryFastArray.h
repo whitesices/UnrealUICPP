@@ -11,7 +11,7 @@
 
 
 
-
+struct FGameplayTag;
 class USlimInventoryComponent;
 class USlimInventoryItem;
 class USlimInventoryItemComponent;
@@ -61,6 +61,8 @@ public:
 	USlimInventoryItem* AddEntry( USlimInventoryItem* Item);
 	//定义移除相应条目的函数
 	void RemoveEntry(USlimInventoryItem* Item);
+	//定义通过类型获取第一个小部件的函数
+	USlimInventoryItem* FindFirstItemByType( const FGameplayTag& ItemType);
 
 private:
 	//声明相应的参数属性

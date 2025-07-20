@@ -6,6 +6,7 @@
 #include "Widgets/Inventory/InventoryBase/Slim_InventoryBase.h"
 #include "Items/Components/SlimInventoryItemComponent.h"
 #include "Net/UnrealNetwork.h"
+#include "Items/SlimInventoryItem.h"
 
 // Sets default values for this component's properties
 USlimInventoryComponent::USlimInventoryComponent():InventoryList(this)
@@ -37,6 +38,10 @@ void USlimInventoryComponent::TryAddItem(USlimInventoryItemComponent* ItemCompon
 
 	//创建插槽
 	FSlimSlotAvailabilityResult Result = InventoryUIMenu->HasRoomForItem(ItemComponent);
+
+	//获取小部件是否有效
+	USlimInventoryItem* FoundItem = InventoryList.FindFirstItemByType( ItemComponent->GetItemManifest().GetItemType() );
+	Result.Item = FoundItem;
 
 	if ( Result.TotalRoomToFill == 0 )
 	{

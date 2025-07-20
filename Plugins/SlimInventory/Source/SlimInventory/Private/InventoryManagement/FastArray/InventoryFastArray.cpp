@@ -5,6 +5,7 @@
 #include "Items/SlimInventoryItem.h"
 #include "Items/Components/SlimInventoryItemComponent.h"
 #include "InventoryManagement/Components/SlimInventoryComponent.h"
+#include "GameplayTagContainer.h"//游戏标签容器
 
 TArray<USlimInventoryItem*> FSlimInventoryFastArray::GetAllItems() const
 {
@@ -107,4 +108,14 @@ void FSlimInventoryFastArray::RemoveEntry(USlimInventoryItem* Item)
 			MarkArrayDirty();
 		}
 	}
+}
+
+USlimInventoryItem* FSlimInventoryFastArray::FindFirstItemByType(const FGameplayTag& ItemType)
+{
+	auto* FoundItem = Entries.FindByPredicate([ NewItemType = ItemType ]( const FSlimInventoryEntry& Entry )
+	{
+		return IsValid( Entry.Item) && Entry.Item->GetItemManifest().GetItemType().MatchesTagExact(NewItemType);
+	});
+
+	return FoundItem ? FoundItem->Item : nullptr;
 }
