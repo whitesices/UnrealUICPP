@@ -47,10 +47,18 @@ public:
 	//定义一个判断是否可以堆叠的方法
 	bool IsStackable() const;
 
+	//定义和获取堆叠总数相关的函数
+	int32 GetTotalStackCount() const { return TotalStackCount; }
+	void SetTotalStackCount(int32 Count) { TotalStackCount = Count; }
+
 private:
 	//声明实例结构体
 	UPROPERTY( VisibleAnywhere , meta = ( BaseStruct = "/Script/SlimInventory.SlimItemManifest" ) , Replicated )
 	FInstancedStruct  ItemManiFest;
+
+	//声明堆叠总数
+	UPROPERTY(Replicated)
+	int32 TotalStackCount = 1;
 };
 
 //声明模板函数获取对应的FragmentType

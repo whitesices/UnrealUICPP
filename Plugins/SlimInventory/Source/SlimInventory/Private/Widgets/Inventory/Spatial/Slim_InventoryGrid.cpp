@@ -164,22 +164,22 @@ FSlimSlotAvailabilityResult USlim_InventoryGrid::HasRoomForItem(const FSlimItemM
 {
 	FSlimSlotAvailabilityResult Result;
 	/*Result.TotalRoomToFill = 1;*/
-	Result.TotalRoomToFill = 7;
-	Result.bStackable = true;
+	//Result.TotalRoomToFill = 7;
+	//Result.bStackable = true;
 
-	//申明插槽可见性
-	FSlimInventorySlotVisibility SlotVisbility;
-	/*SlotVisbility.AmountToFill = 1;*/
-	SlotVisbility.AmountToFill = 2;
-	SlotVisbility.SlotIndex = 0;
+	////申明插槽可见性
+	//FSlimInventorySlotVisibility SlotVisbility;
+	///*SlotVisbility.AmountToFill = 1;*/
+	//SlotVisbility.AmountToFill = 2;
+	//SlotVisbility.SlotIndex = 0;
 
-	Result.SlotAvailiabilites.Add(MoveTemp(SlotVisbility));
+	//Result.SlotAvailiabilites.Add(MoveTemp(SlotVisbility));
 
-	//声明插槽可见性
-	FSlimInventorySlotVisibility SlotAvailability2;
-	SlotAvailability2.AmountToFill = 5;
-	SlotAvailability2.SlotIndex = 1;
-	Result.SlotAvailiabilites.Add(MoveTemp(SlotAvailability2));
+	////声明插槽可见性
+	//FSlimInventorySlotVisibility SlotAvailability2;
+	//SlotAvailability2.AmountToFill = 5;
+	//SlotAvailability2.SlotIndex = 1;
+	//Result.SlotAvailiabilites.Add(MoveTemp(SlotAvailability2));
 
 	//Determine if the item is stackable
 	const FSlimStackFragment* StackableFragment = Manifest.GetFragmentOfType<FSlimStackFragment>();

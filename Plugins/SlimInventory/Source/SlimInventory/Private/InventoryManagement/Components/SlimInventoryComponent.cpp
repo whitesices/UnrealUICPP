@@ -77,7 +77,18 @@ void USlimInventoryComponent::Server_AddNewItem_Implementation( USlimInventoryIt
 
 void USlimInventoryComponent::Server_AddStacksToItem_Implementation( USlimInventoryItemComponent* ItemComponent, int32 StackCount, int32 Remainder )
 {
+	const FGameplayTag& ItemType = IsValid(ItemComponent) ? ItemComponent->GetItemManifest().GetItemType() : FGameplayTag::EmptyTag;
+	USlimInventoryItem* Item = InventoryList.FindFirstItemByType( ItemType );
 
+	if (!IsValid(Item))
+	{
+		return;
+	}
+
+	Item->SetTotalStackCount( Item->GetTotalStackCount() + StackCount );
+
+	//TODO: Destroy the Item if the Remainder is zero
+	//Otherwise , update the stack count fro the item pickup
 }
 
 

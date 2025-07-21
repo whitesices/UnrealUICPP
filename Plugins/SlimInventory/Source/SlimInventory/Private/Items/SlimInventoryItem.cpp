@@ -11,6 +11,7 @@ void USlimInventoryItem::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& O
 {
 	UObject::GetLifetimeReplicatedProps( OutLifetimeProps );
 	DOREPLIFETIME( ThisClass , ItemManiFest );
+	DOREPLIFETIME( ThisClass , TotalStackCount );
 }
 
 void USlimInventoryItem::SetItemManifest(const FSlimItemManifest& Manifest)
