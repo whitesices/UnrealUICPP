@@ -79,6 +79,8 @@ public:
 	int32 GetMaxStackSize() const { return MaxStackSize; }
 	//定义获取栈计数
 	int32 GetStackCount() const { return StackCount; }
+	//定义设置堆叠计数
+	void SetStackCount(int32 Count) { StackCount = Count; }
 private:
 
 	//定义最大栈大小

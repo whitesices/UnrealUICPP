@@ -33,6 +33,7 @@ void USlim_InventoryGrid::NativeOnInitialized()
 	//获取绑定的InventoryComponent
 	InventoryComponent = USlimInventoryStatics::GetInventoryComponent( GetOwningPlayer() );
 	InventoryComponent->OnItemAdded.AddDynamic( this ,&USlim_InventoryGrid::AddItem);
+	InventoryComponent->OnStackChange.AddDynamic( this , &USlim_InventoryGrid::AddStackNumer);
 }
 
 FSlimSlotAvailabilityResult USlim_InventoryGrid::HasRoomForItem(const USlimInventoryItemComponent* ItemComponent)
@@ -387,6 +388,7 @@ int32 USlim_InventoryGrid::GetStackAmount(const UInventoryGridSlot* GridSlot) co
 //	});
 //}
 
+#pragma region 绑定多播委托代理的函数
 void USlim_InventoryGrid::AddItem(USlimInventoryItem* Item)
 {
 	if (!MatchesCategory(Item))
@@ -403,6 +405,32 @@ void USlim_InventoryGrid::AddItem(USlimInventoryItem* Item)
 	AddItemToIndices(Result , Item);
 
 }
+
+void USlim_InventoryGrid::AddStackNumer(const FSlimSlotAvailabilityResult& Result)
+{
+	//实现参数的更新
+	if ( !MatchesCategory(Result.Item.Get()) ) return;
+
+	//遍历可用性
+	for ( const auto& Availability : Result.SlotAvailiabilites )
+	{
+		if ( Availability.bItemAtIndex )
+		{
+			const auto& GridSlot = GridSlots[Availability.SlotIndex];//获取网格插槽
+			const auto& SlotItem = SlottedItems.FindChecked( Availability.SlotIndex );//获取插槽小部件
+
+			SlotItem->UpdateStackCount( GridSlot->GetStackCount() + Availability.AmountToFill );
+			GridSlot->SetStackCount( GridSlot->GetStackCount() +  Availability.AmountToFill );
+		}
+		else
+		{
+			AddItemAtIndex( Result.Item.Get() , Availability.SlotIndex , Result.bStackable , Availability.AmountToFill );//根据索引添加项目
+			UpdateGridSlots( Result.Item.Get() , Availability.SlotIndex , Result.bStackable , Availability.AmountToFill );//更新网格插槽
+		}
+	}
+}
+
+#pragma endregion
 
 void USlim_InventoryGrid::ConstructGrid()
 {

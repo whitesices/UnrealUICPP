@@ -44,6 +44,10 @@ public:
 	UFUNCTION()
 	void AddItem(USlimInventoryItem* Item);
 
+	//定义更新堆叠数量的函数蓝图可调用
+	UFUNCTION(Category="Inventory")
+	void AddStackNumer(const FSlimSlotAvailabilityResult& Result);
+
 private:
 	//自定义初始化Grid函数
 	void ConstructGrid();

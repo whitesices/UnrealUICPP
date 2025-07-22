@@ -42,6 +42,10 @@ struct SLIMINVENTORY_API FSlimItemManifest
 	template<typename T> requires std::derived_from< T , FSlimItemFragment >
 	const T* GetFragmentOfType() const;
 
+	//声明一个模板类函数去通过类型匹配获取对应的片段
+	template<typename T> requires std::derived_from< T , FSlimItemFragment>
+	T* GetFragmentOfTypeMutable();
+
 private:
 	//定义选择的属性
 	UPROPERTY( EditAnywhere , Category = "Inventory" )
@@ -84,6 +88,19 @@ inline const T* FSlimItemManifest::GetFragmentOfType() const
 		if ( const T* FragmentPtr = Fragment.GetPtr<T>() )
 		{
 			return FragmentPtr;
+		}
+	}
+	return nullptr;
+}
+
+template<typename T> requires std::derived_from< T, FSlimItemFragment >
+inline T* FSlimItemManifest::GetFragmentOfTypeMutable()
+{
+	for ( TInstancedStruct<FSlimItemFragment>& Fragment : Fragments )
+	{
+		if ( T* FragmentPtr = Fragment.GetMutablePtr<T>() )
+		{
+			return FragmentPtr;//返回对应的片段
 		}
 	}
 	return nullptr;

@@ -31,8 +31,13 @@ public:
 	{
 		return PickupMessage;
 	}
+	//声明实现的Pickup函数
+	void Pickup();
 protected:
 
+	//声明Pickup函数
+	UFUNCTION(BlueprintImplementableEvent, Category = "Inventory")
+	void OnPickUp();
 
 private:
 	//声明传递的拾取信息

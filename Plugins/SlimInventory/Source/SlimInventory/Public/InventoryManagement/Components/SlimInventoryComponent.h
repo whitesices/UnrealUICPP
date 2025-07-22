@@ -14,6 +14,7 @@ class USlimInventoryItemComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInventoryItemChange, USlimInventoryItem*, Item);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FNoRoomInInventory);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStackChange , const FSlimSlotAvailabilityResult& , Result);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) , Blueprintable )
 class SLIMINVENTORY_API USlimInventoryComponent : public UActorComponent
@@ -46,6 +47,8 @@ public:
 	FInventoryItemChange OnItemAdded;
 	FInventoryItemChange OnItemRemoved;
 	FNoRoomInInventory OnNoRoomInInventory;
+
+	FStackChange OnStackChange;
 
 protected:
 	virtual void BeginPlay() override;

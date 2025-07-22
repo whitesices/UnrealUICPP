@@ -7,6 +7,8 @@
 #include "Items/Components/SlimInventoryItemComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Items/SlimInventoryItem.h"
+//引入自定义的片段
+#include "Fragment/SlimItemFragment.h"
 
 // Sets default values for this component's properties
 USlimInventoryComponent::USlimInventoryComponent():InventoryList(this)
@@ -54,6 +56,7 @@ void USlimInventoryComponent::TryAddItem(USlimInventoryItemComponent* ItemCompon
 	{
 		//在已经存在的库存UI上按照栈的方式新增条目，只是更新栈的数量
 		//不会创建新的条目
+		OnStackChange.Broadcast(Result);//广播堆叠数量的变化
 		Server_AddStacksToItem( ItemComponent , Result.TotalRoomToFill , Result.Remainder );
 	}
 	else if ( Result.TotalRoomToFill > 0.f )
@@ -73,6 +76,8 @@ void USlimInventoryComponent::Server_AddNewItem_Implementation( USlimInventoryIt
 	{
 		OnItemAdded.Broadcast(NewItem);
 	}
+
+	ItemComponent->Pickup();//调用Pickup函数来销毁对应的Item
 }
 
 void USlimInventoryComponent::Server_AddStacksToItem_Implementation( USlimInventoryItemComponent* ItemComponent, int32 StackCount, int32 Remainder )
@@ -89,6 +94,16 @@ void USlimInventoryComponent::Server_AddStacksToItem_Implementation( USlimInvent
 
 	//TODO: Destroy the Item if the Remainder is zero
 	//Otherwise , update the stack count fro the item pickup
+
+	if ( Remainder == 0 )
+	{
+		ItemComponent->Pickup();//销毁对应的Item
+	}
+	else if( FSlimStackFragment* StackableFragment =  ItemComponent->GetItemManifest().GetFragmentOfTypeMutable<FSlimStackFragment>() )
+	{
+		StackableFragment->SetStackCount(Remainder);//更新堆叠数量
+	}
+	
 }
 
 

@@ -17,6 +17,12 @@ void USlimInventoryItemComponent::GetLifetimeReplicatedProps(TArray<FLifetimePro
 	DOREPLIFETIME(ThisClass, ItemManifest);
 }
 
+void USlimInventoryItemComponent::Pickup()
+{
+	OnPickUp();//调用蓝图实现的拾取函数
+	GetOwner()->Destroy();//销毁
+}
+
 
 
 
