@@ -317,7 +317,7 @@ bool USlim_InventoryGrid::CheckSlotConstraints(
 	// If stackable , is this slot at the max stack size already? 
 	if (GridSlot->GetStackCount() >= MaxStackSize) return false;
 
-	return false;
+	return true;
 }
 
 bool USlim_InventoryGrid::HasValidItem(const UInventoryGridSlot* GridSlot) const
@@ -354,7 +354,7 @@ int32 USlim_InventoryGrid::DetermineFilAmountForSlot(const bool bStackable,
 
 int32 USlim_InventoryGrid::GetStackAmount(const UInventoryGridSlot* GridSlot) const
 {
-	int32 CurrentSlotStackAmount = 0;
+	int32 CurrentSlotStackAmount = GridSlot->GetStackCount();
 	//If we are at a slot that doesn`t hold the stack count , we must get the actual stack count
 	if (const int32 UpperLeftIndex = GridSlot->GetUpperLeftIndex() ; UpperLeftIndex != INDEX_NONE )
 	{
