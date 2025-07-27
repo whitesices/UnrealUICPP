@@ -19,6 +19,7 @@ struct FSlimItemManifest;
 struct FSlimImageFragment;
 struct FSlimGridFragment;
 class USlimSlottedItem;
+class USlimHoverItem;
 struct FGameplayTag;
 
 /**
@@ -48,6 +49,10 @@ public:
 	UFUNCTION(Category="Inventory")
 	void AddStackNumer(const FSlimSlotAvailabilityResult& Result);
 
+	//定义SlottedItem的点击事件
+	UFUNCTION()
+	void OnSlottedItemClicked( int32 InGridIndex , const FPointerEvent& InMouseEvent );
+
 private:
 	//自定义初始化Grid函数
 	void ConstructGrid();
@@ -74,6 +79,13 @@ private:
 	//建立slottedItem的键值对映射
 	UPROPERTY( VisibleAnywhere , Category = "Inventory")
 	TMap< int32, TObjectPtr<USlimSlottedItem> > SlottedItems;
+
+	//声明HoverItem
+	UPROPERTY(EditAnywhere , Category = "Inventory")
+	TSubclassOf<USlimHoverItem> HoverItemClass;
+	//声明HoverItem的变量
+	UPROPERTY()
+	TObjectPtr<USlimHoverItem> HoverItem;
 
 	UPROPERTY( meta=(BindWidget) )
 	TObjectPtr<UCanvasPanel> CanvasPanel;
@@ -138,4 +150,14 @@ private:
 	int32 DetermineFilAmountForSlot(const bool bStackable , const int32 MaxStackSize , const int32 AmountToFill , const UInventoryGridSlot* GridSlot) const;
 	//声明一个函数来获取堆叠数量
 	int32 GetStackAmount( const UInventoryGridSlot* GridSlot) const;
+
+	//定义鼠标右击事件
+	bool IsRightClick(const FPointerEvent& InMouseEvent) const;
+	//定义鼠标左击事件
+	bool IsLeftClick(const FPointerEvent& InMouseEvent) const;
+
+	//声明Pickup函数
+	void PickUp( USlimInventoryItem* ClickedInventoryItem , const int32 GridIndex);
+	//声明绑定的HoverItem的函数
+	void AssignHoverItem(USlimInventoryItem* InventoryItem);
 };

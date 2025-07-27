@@ -23,6 +23,7 @@
 #include "Items/SlimInventoryItem.h"
 
 #include "GameplayTagContainer.h"//引入GameplaytagContainer头文件
+#include "Widgets/Inventory/HoverItem/SlimHoverItem.h"
 
 void USlim_InventoryGrid::NativeOnInitialized()
 {
@@ -109,6 +110,9 @@ USlimSlottedItem* USlim_InventoryGrid::CreateSlottedItem(USlimInventoryItem* Ite
 	SlottedItem->SetIsStackable( bStackable );
 	const int32 StackUpdateAmount = bStackable ? StackAmount : 0;
 	SlottedItem->UpdateStackCount(StackUpdateAmount);
+
+	//小部件绑定事件
+	SlottedItem->OnSlottedItemClicked.AddDynamic( this , &ThisClass::OnSlottedItemClicked);
 
 	return SlottedItem;
 }
@@ -366,6 +370,54 @@ int32 USlim_InventoryGrid::GetStackAmount(const UInventoryGridSlot* GridSlot) co
 	return CurrentSlotStackAmount;
 }
 
+#pragma region 鼠标事件处理函数
+void USlim_InventoryGrid::OnSlottedItemClicked(int32 InGridIndex, const FPointerEvent& InMouseEvent)
+{
+	/*UE_LOG(LogTemp, Warning, TEXT("Clicked on item at index %d"), InGridIndex);*/
+	//判断网格插槽索引有效
+	check( GridSlots.IsValidIndex(InGridIndex) );
+
+	//获取点击的网格插槽小部件
+	USlimInventoryItem* ClickedItem = GridSlots[InGridIndex]->GetInventoryItem().Get();
+	//判断Hover事件是否有效
+	if (!IsValid(HoverItem) && IsLeftClick(InMouseEvent) )
+	{
+		//TODO: PickUp - Assign the hover item , and remove the slotted item from the grid
+		PickUp(ClickedItem, InGridIndex);
+	}
+}
+
+bool USlim_InventoryGrid::IsRightClick(const FPointerEvent& InMouseEvent) const
+{
+	return InMouseEvent.GetEffectingButton() == EKeys::RightMouseButton;
+}
+
+bool USlim_InventoryGrid::IsLeftClick(const FPointerEvent& InMouseEvent) const
+{
+	return InMouseEvent.GetEffectingButton() == EKeys::LeftMouseButton;
+}
+void USlim_InventoryGrid::PickUp(USlimInventoryItem* ClickedInventoryItem, const int32 GridIndex)
+{
+	AssignHoverItem(ClickedInventoryItem);
+
+	//Remove Clicked Item from the grid
+}
+void USlim_InventoryGrid::AssignHoverItem(USlimInventoryItem* InventoryItem)
+{
+	if (!IsValid(HoverItem))
+	{
+		HoverItem = CreateWidget<USlimHoverItem>( GetOwningPlayer() , HoverItemClass );
+	}
+
+	const FSlimGridFragment* GridFragment = GetFragment<FSlimGridFragment>(InventoryItem , FragmentTags::FragmentTags_GridFragment);
+	const FSlimImageFragment* ImageFragment = GetFragment<FSlimImageFragment>(InventoryItem, FragmentTags::FragmentTags_ImageFragment);
+
+	if (!GridFragment || !ImageFragment) return;
+
+	const FVector2D DrawSize = GetDrawSize(GridFragment);
+}
+#pragma endregion
+
 //void USlim_InventoryGrid::UpdateGridSlots(USlimInventoryItem* NewItem, const int32 Index)
 //{
 //	//检查网格插槽索引的有效性
@@ -429,6 +481,8 @@ void USlim_InventoryGrid::AddStackNumer(const FSlimSlotAvailabilityResult& Resul
 		}
 	}
 }
+
+
 
 #pragma endregion
 

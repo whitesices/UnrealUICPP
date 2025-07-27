@@ -10,6 +10,9 @@ class USlimInventoryItem;
 class UImage;
 class UTextBlock;
 
+//声明一个多播委托，用于处理小部件插槽点击事件
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams( FSlottedItemClicked , int32 , GridIndex , const FPointerEvent& , MouseEvent );
+
 /**
  * 
  */
@@ -19,6 +22,9 @@ class SLIMINVENTORY_API USlimSlottedItem : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	//覆写button按下事件
+	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+
 	//定义返回是否开启堆叠的函数
 	bool IsStackable() const { return bIsStackable; }
 	//定义设置是否开启堆叠的函数
@@ -44,6 +50,8 @@ public:
 
 	//更新栈文本数据
 	void UpdateStackCount( int32 StackCount );
+
+	FSlottedItemClicked OnSlottedItemClicked;//声明自定义的多播委托
 	
 private:
 	//声明图片资源

@@ -6,6 +6,12 @@
 #include "Components/Image.h" //引入图片
 #include "Components/TextBlock.h"//引入文本数据
 
+FReply USlimSlottedItem::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	OnSlottedItemClicked.Broadcast(GridIndex , InMouseEvent );//触发自定义的多播委托
+	return FReply::Handled();
+}
+
 void USlimSlottedItem::SetImageBrush(const FSlateBrush& Brush) const
 {
 	//设置brush

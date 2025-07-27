@@ -43,7 +43,8 @@ public class SlimInventory : ModuleRules
 				"Slate",
 				"SlateCore",
                 "EnhancedInput",//引入增强输入模块
-				"UMG"//引入UMG模块
+				"UMG",//引入UMG模块
+				"InputCore"//引入输入核心模块
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
