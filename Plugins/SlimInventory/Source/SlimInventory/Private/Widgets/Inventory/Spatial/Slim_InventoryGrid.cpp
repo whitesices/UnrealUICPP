@@ -21,10 +21,12 @@
 #include "Fragment/SlimItemFragment.h"
 #include "Fragment/SlimFragmentTag.h"
 #include "Items/SlimInventoryItem.h"
+#include "SlimInventory.h"
 
 #include "GameplayTagContainer.h"//引入GameplaytagContainer头文件
 #include "Widgets/Inventory/HoverItem/SlimHoverItem.h"
 
+#pragma region 覆写函数
 void USlim_InventoryGrid::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
@@ -36,6 +38,18 @@ void USlim_InventoryGrid::NativeOnInitialized()
 	InventoryComponent->OnItemAdded.AddDynamic( this ,&USlim_InventoryGrid::AddItem);
 	InventoryComponent->OnStackChange.AddDynamic( this , &USlim_InventoryGrid::AddStackNumer);
 }
+
+void USlim_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+
+	const FVector2D CanvasPosition = UInventoryWidgetUtils::GetWidgetPosition( CanvasPanel );
+	const FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport( GetOwningPlayer() );
+
+	//调用更新图块操作
+	UpdateTileParameters( CanvasPosition , MousePosition );
+}
+#pragma endregion
 
 FSlimSlotAvailabilityResult USlim_InventoryGrid::HasRoomForItem(const USlimInventoryItemComponent* ItemComponent)
 {
@@ -398,9 +412,10 @@ bool USlim_InventoryGrid::IsLeftClick(const FPointerEvent& InMouseEvent) const
 }
 void USlim_InventoryGrid::PickUp(USlimInventoryItem* ClickedInventoryItem, const int32 GridIndex)
 {
-	AssignHoverItem(ClickedInventoryItem);
-
+	//Assign hover item
+	AssignHoverItem(ClickedInventoryItem, GridIndex, GridIndex);
 	//Remove Clicked Item from the grid
+	RemoveItemFromGrid(ClickedInventoryItem , GridIndex );
 }
 void USlim_InventoryGrid::AssignHoverItem(USlimInventoryItem* InventoryItem)
 {
@@ -415,6 +430,152 @@ void USlim_InventoryGrid::AssignHoverItem(USlimInventoryItem* InventoryItem)
 	if (!GridFragment || !ImageFragment) return;
 
 	const FVector2D DrawSize = GetDrawSize(GridFragment);
+
+	FSlateBrush ImageBrush;
+	ImageBrush.SetResourceObject( ImageFragment->GetIcon() );
+	ImageBrush.DrawAs = ESlateBrushDrawType::Image;
+	ImageBrush.ImageSize = DrawSize * UWidgetLayoutLibrary::GetViewportScale(this);//图片尺寸的缩放
+
+	HoverItem->SetImageBrush(ImageBrush);//设置HoverItem的图片
+	HoverItem->SetGridDimensions(GridFragment->GetGridSize() );//设置HoverItem的网格尺寸
+	HoverItem->SetInventoryItem(InventoryItem);
+	HoverItem->SetIsStackable( InventoryItem->IsStackable() );//设置HoverItem是否可以堆叠
+
+	GetOwningPlayer()->SetMouseCursorWidget( EMouseCursor::Default , HoverItem );//设置鼠标光标小部件
+}
+void USlim_InventoryGrid::AssignHoverItem(USlimInventoryItem* InventoryItem, const int32 GridIndex, const int32 PreviousGridIndex)
+{
+	AssignHoverItem(InventoryItem);
+
+	HoverItem->SetPreviousGridIndex( PreviousGridIndex );//设定鼠标悬停之前的网格索引
+	HoverItem->UpdateStackCountText( InventoryItem->IsStackable() ? GridSlots[GridIndex]->GetStackCount() : 0 );//更新堆叠数量文本
+}
+void USlim_InventoryGrid::RemoveItemFromGrid(USlimInventoryItem* InventoryItem, const int32 GridIndex)
+{
+	const FSlimGridFragment* GridFragment = GetFragment<FSlimGridFragment >( InventoryItem , FragmentTags::FragmentTags_GridFragment );
+
+	if (!GridFragment) return;
+
+	USlimInventoryStatics::ForEach2D(GridSlots, GridIndex, GridFragment->GetGridSize(), Columns, [&]( UInventoryGridSlot* GridSlot )
+	{
+		GridSlot->SetSlimInventoryItem(nullptr);//清除网格插槽小部件
+		GridSlot->SetUpperLeftIndex(INDEX_NONE);//清除左上角索引
+		GridSlot->SetUnoccupiedTexture();//设置网格插槽未被占用的状态
+		GridSlot->SetAvailable(true);//设置插槽可用状态
+		GridSlot->SetStackCount(0);//清除堆叠数量
+	});//遍历更新Item信息
+
+	if ( SlottedItems.Contains(GridIndex ) )
+	{
+		TObjectPtr<USlimSlottedItem> FoundSlottedItem;
+		SlottedItems.RemoveAndCopyValue( GridIndex , FoundSlottedItem );
+		FoundSlottedItem->RemoveFromParent();//从父级移除小部件
+	}
+}
+void USlim_InventoryGrid::UpdateTileParameters(const FVector2D& CanavsPosition, const FVector2D& MousePosition)
+{
+	//if mouse not in canvas , return
+	//Calculate the tile quadrant,title index , and coordinates
+	const FIntPoint HoverItemCoordinates = CalculateHoverItemSize(CanavsPosition, MousePosition);
+
+	LastTileParameters = TileParameters;
+	TileParameters.TileCoordinates = HoverItemCoordinates;
+	TileParameters.TileIndex = UInventoryWidgetUtils::GetInventoryIndexFromPosition( HoverItemCoordinates,Columns );
+	TileParameters.TileQuadrant = CalculateTileQuadrant(CanavsPosition, MousePosition);
+	//Handle highlight/Unhighlight of the tile
+	OnTileParametersUpdated(TileParameters);
+}
+
+//计算鼠标悬停图块大小
+FIntPoint USlim_InventoryGrid::CalculateHoverItemSize(const FVector2D& CanvasPosition, const FVector2D& MousePosition) const
+{
+	return FIntPoint{
+		static_cast<int32>( FMath::FloorToInt( ( MousePosition.X - CanvasPosition.X ) / TileSize ) ),
+		static_cast<int32>( FMath::FloorToInt( (MousePosition.Y - CanvasPosition.Y ) / TileSize ) )
+	};
+}
+EInventoryTileQuadrant USlim_InventoryGrid::CalculateTileQuadrant(const FVector2D& CanvasPosition, const FVector2D& MousePosition) const
+{
+	//Calculate relative position within the current tile
+	const float TileLocalX = FMath::Fmod( MousePosition.X - CanvasPosition.X , TileSize );
+	const float TileLocalY = FMath::Fmod( MousePosition.Y - CanvasPosition.Y , TileSize );
+
+	//Determine which quarant the mouse is in
+	const bool bIsTop = TileLocalY < TileSize / 2.f;//Top if Y is in the upper half
+	const bool bIsLeft = TileLocalX < TileSize / 2.f;//Left if X is in the left half
+
+	EInventoryTileQuadrant HoveredTileQuardrant{EInventoryTileQuadrant::None};
+	if (bIsTop && bIsLeft)
+	{
+		HoveredTileQuardrant = EInventoryTileQuadrant::TopLeft;
+	}
+	else if (bIsTop && !bIsLeft)
+	{
+		HoveredTileQuardrant = EInventoryTileQuadrant::TopRight;
+	}
+	else if (!bIsTop && bIsLeft)
+	{
+		HoveredTileQuardrant = EInventoryTileQuadrant::BottomLeft;
+	}
+	else if (!bIsTop && !bIsLeft)
+	{
+		HoveredTileQuardrant = EInventoryTileQuadrant::BottomRight;
+	}
+
+	return HoveredTileQuardrant;
+}
+void USlim_InventoryGrid::OnTileParametersUpdated(const FSlimInventoryTileParameters& Parameters)
+{
+	if (!IsValid(HoverItem)) return;
+
+	//Get HoverItem`s dimensions
+	const FIntPoint HoverItemDimensions = HoverItem->GetGridDimensions();
+	//Calculate the starting coordinates for the hover item
+	const FIntPoint StartPoint = CalculateStartPoint(Parameters.TileCoordinates , HoverItemDimensions , Parameters.TileQuadrant );//计算初始起点
+	ItemDropIndex = UInventoryWidgetUtils::GetInventoryIndexFromPosition( StartPoint , Columns );//通过位置获取网格索引
+	
+	CurrentSpaceQueryResult = CheckHoverPosition( StartPoint , HoverItemDimensions );
+}
+FIntPoint USlim_InventoryGrid::CalculateStartPoint(const FIntPoint& Coordinate, const FIntPoint& Dimensions, const EInventoryTileQuadrant Quadrant) const
+{
+	const int32 HasEvenWidth = Dimensions.X % 2 == 0 ? 1 : 0;//判断宽度是否为偶数
+	const int32 HasEvenHeight = Dimensions.Y % 2 == 0 ? 1 : 0; //判断高度是否为偶数
+
+	FIntPoint StartPoint;
+
+	switch (Quadrant)
+	{
+	case EInventoryTileQuadrant::TopLeft:
+					StartPoint.X = Coordinate.X - FMath::FloorToInt( 0.5f * Dimensions.X );
+					StartPoint.Y = Coordinate.Y - FMath::FloorToInt( 0.5f * Dimensions.Y );
+					break;
+	case EInventoryTileQuadrant::TopRight:
+		StartPoint.X = Coordinate.X - FMath::FloorToInt( 0.5f * Dimensions.X ) + HasEvenWidth;
+		StartPoint.Y = Coordinate.Y - FMath::FloorToInt(0.5f * Dimensions.Y);
+		break;
+	case EInventoryTileQuadrant::BottomLeft:
+		StartPoint.X = Coordinate.X - FMath::FloorToInt(0.5f * Dimensions.X);
+		StartPoint.Y = Coordinate.Y - FMath::FloorToInt(0.5f * Dimensions.Y) + HasEvenHeight;
+		break;
+	case EInventoryTileQuadrant::BottomRight:
+		StartPoint.X = Coordinate.X - FMath::FloorToInt(0.5f * Dimensions.X) + HasEvenWidth;
+		StartPoint.Y = Coordinate.Y - FMath::FloorToInt(0.5f * Dimensions.Y) + HasEvenHeight;
+		break;
+	default:
+		UE_LOG(LogSlimInventory ,Error , TEXT("Invalid Quadrant."));
+		return FIntPoint( -1 , -1 );
+	}
+
+	return StartPoint;
+}
+FSlimSpaceQueryResult USlim_InventoryGrid::CheckHoverPosition(const FIntPoint& Position, const FIntPoint& Dimensions) const
+{
+	FSlimSpaceQueryResult Result;
+	//check hover position
+			// int the grid bounds?
+			// any items in the way ?
+			//if so , is there only one item in the way?( can we swap?)
+	return Result;
 }
 #pragma endregion
 

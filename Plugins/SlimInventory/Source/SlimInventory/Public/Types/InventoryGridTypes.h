@@ -52,3 +52,55 @@ struct FSlimSlotAvailabilityResult
 	TArray<FSlimInventorySlotVisibility> SlotAvailiabilites;
 
 };
+
+//创建图块象限类型
+UENUM(BlueprintType)
+enum class EInventoryTileQuadrant : uint8
+{
+	TopLeft,
+	TopRight,
+	BottomLeft,
+	BottomRight,
+	None
+};
+
+//创建图块参数类型
+USTRUCT(BlueprintType)
+struct FSlimInventoryTileParameters
+{
+	GENERATED_BODY()
+public:
+	//声明图块的宽高
+	UPROPERTY(BlueprintReadWrite , EditAnywhere , Category="Inventory")
+	FIntPoint TileCoordinates{};
+	//声明图块的索引
+	UPROPERTY(BlueprintReadWrite, EditAnywhere , Category="Inventory")
+	int32 TileIndex{INDEX_NONE};
+	//声明图块的象限
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Inventory")
+	EInventoryTileQuadrant TileQuadrant{ EInventoryTileQuadrant::None };
+
+};
+
+//创建空间查询的结果类
+USTRUCT(BlueprintType)
+struct FSlimSpaceQueryResult
+{
+	GENERATED_BODY()
+public:
+	//创建一个标志位来判断是否有空间
+	/*UPROPERTY(BlueprintReadWrite , EditAnywhere , Category="Inventory")*/
+	bool bHasSpace{ false };
+	//创建一个变量来存储空间查询的结果存储有效的小部件
+	TWeakObjectPtr<USlimInventoryItem> ValidItem = nullptr;
+	//创建一个变量存储有效小部件左上角索引
+	int32 UpperLeftIndex{ INDEX_NONE };
+};
+
+//重载==运算符
+inline bool operator==( const FSlimInventoryTileParameters& A , const FSlimInventoryTileParameters& B )
+{
+	return A.TileCoordinates == B.TileCoordinates &&
+		   A.TileIndex == B.TileIndex  &&
+		   A.TileQuadrant == B.TileQuadrant;
+}

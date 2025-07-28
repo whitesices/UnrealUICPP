@@ -33,6 +33,9 @@ class SLIMINVENTORY_API USlim_InventoryGrid : public UUserWidget
 public:
 	//覆写初始化函数
 	virtual void NativeOnInitialized() override;
+	//覆写Tick函数
+	virtual void NativeTick(const FGeometry& MyGeometry, float InDeltaTime) override;
+
 	//获取小部件的类型
 	EInventory_ItemCategory GetItemCategory() const { return ItemCatgory; }
 	//获取小部件是否还有空间的结果函数、
@@ -80,12 +83,22 @@ private:
 	UPROPERTY( VisibleAnywhere , Category = "Inventory")
 	TMap< int32, TObjectPtr<USlimSlottedItem> > SlottedItems;
 
+#pragma region 拖拽操作相关
 	//声明HoverItem
 	UPROPERTY(EditAnywhere , Category = "Inventory")
 	TSubclassOf<USlimHoverItem> HoverItemClass;
 	//声明HoverItem的变量
 	UPROPERTY()
 	TObjectPtr<USlimHoverItem> HoverItem;
+
+	//声明定义图块参数以及前一个图块参数
+	FSlimInventoryTileParameters TileParameters;
+	FSlimInventoryTileParameters LastTileParameters;
+
+	//声明拖拽的Index 和空间查询该位置可以放置的Item
+	int32 ItemDropIndex{INDEX_NONE};
+	FSlimSpaceQueryResult CurrentSpaceQueryResult;
+#pragma endregion
 
 	UPROPERTY( meta=(BindWidget) )
 	TObjectPtr<UCanvasPanel> CanvasPanel;
@@ -150,7 +163,7 @@ private:
 	int32 DetermineFilAmountForSlot(const bool bStackable , const int32 MaxStackSize , const int32 AmountToFill , const UInventoryGridSlot* GridSlot) const;
 	//声明一个函数来获取堆叠数量
 	int32 GetStackAmount( const UInventoryGridSlot* GridSlot) const;
-
+#pragma region 鼠标相关处理函数
 	//定义鼠标右击事件
 	bool IsRightClick(const FPointerEvent& InMouseEvent) const;
 	//定义鼠标左击事件
@@ -160,4 +173,22 @@ private:
 	void PickUp( USlimInventoryItem* ClickedInventoryItem , const int32 GridIndex);
 	//声明绑定的HoverItem的函数
 	void AssignHoverItem(USlimInventoryItem* InventoryItem);
+	//声明更新堆叠数量的HoverItem的函数
+	void AssignHoverItem( USlimInventoryItem* InventoryItem , const int32 GridIndex , const int32 PreviousGridIndex );
+	//声明捡起物品后移除方格内显示的物品
+	void RemoveItemFromGrid(USlimInventoryItem* InventoryItem , const int32 GridIndex);
+
+	//定义更新图块参数函数
+	void UpdateTileParameters( const FVector2D& CanavsPosition , const FVector2D& MousePosition);
+	//定义封装一个函数来计算HoverItem的size
+	FIntPoint CalculateHoverItemSize( const FVector2D& CanvasPosition , const FVector2D& MousePosition ) const;
+	//定义一个函数来计算图块象限
+	EInventoryTileQuadrant CalculateTileQuadrant( const FVector2D& CanvasPosition, const FVector2D& MousePosition ) const;
+	//定义一个函数更新图块参数
+	void OnTileParametersUpdated(const FSlimInventoryTileParameters& Parameters );
+	//定义一个函数计算初始起点
+	FIntPoint CalculateStartPoint( const FIntPoint& Coordinate,const FIntPoint& Dimensions , const EInventoryTileQuadrant Quadrant ) const ;
+	//定义一个函数判断滑动的位置是否有效
+	FSlimSpaceQueryResult CheckHoverPosition( const FIntPoint& Position , const FIntPoint& Dimensions) const;
+#pragma endregion
 };
