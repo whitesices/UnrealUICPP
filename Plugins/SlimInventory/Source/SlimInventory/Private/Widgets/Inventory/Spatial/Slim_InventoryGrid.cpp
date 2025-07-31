@@ -573,6 +573,7 @@ FSlimSpaceQueryResult USlim_InventoryGrid::CheckHoverPosition(const FIntPoint& P
 	FSlimSpaceQueryResult Result;
 	//check hover position
 			// int the grid bounds?
+	if (!IsInGridBounds(UInventoryWidgetUtils::GetInventoryIndexFromPosition(Position, Columns), Dimensions))  return Result;
 			// any items in the way ?
 			//if so , is there only one item in the way?( can we swap?)
 	return Result;
