@@ -59,12 +59,12 @@ public:
 	void SetGrayedOutTexture();
 	
 private:
-	int32 TileIndex;
+	int32 TileIndex{INDEX_NONE};
 	//声明堆叠参数
-	int32 StackCount;
+	int32 StackCount{0};
 	int32 UpperLeftIndex{INDEX_NONE};
 	TWeakObjectPtr<USlimInventoryItem> InventoryItem;
-	bool bAvailable;//是否有效
+	bool bAvailable{true};//是否有效
 
 	UPROPERTY( meta=(BindWidget) )
 	TObjectPtr<UImage> Image_GridSlot;

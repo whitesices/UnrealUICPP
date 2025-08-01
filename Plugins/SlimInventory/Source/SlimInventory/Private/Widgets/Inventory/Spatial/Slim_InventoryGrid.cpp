@@ -46,6 +46,12 @@ void USlim_InventoryGrid::NativeTick(const FGeometry& MyGeometry, float InDeltaT
 	const FVector2D CanvasPosition = UInventoryWidgetUtils::GetWidgetPosition( CanvasPanel );
 	const FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport( GetOwningPlayer() );
 
+	//更新判断鼠标是否在画布上
+	if ( CursorExitedCanvas( CanvasPosition , UInventoryWidgetUtils::GetWidgetSize( CanvasPanel ) , MousePosition ) )
+	{
+		return;//如果鼠标不在画布上，则直接返回，不更新接下来的操作
+	}
+
 	//调用更新图块操作
 	UpdateTileParameters( CanvasPosition , MousePosition );
 }
@@ -475,6 +481,7 @@ void USlim_InventoryGrid::RemoveItemFromGrid(USlimInventoryItem* InventoryItem, 
 void USlim_InventoryGrid::UpdateTileParameters(const FVector2D& CanavsPosition, const FVector2D& MousePosition)
 {
 	//if mouse not in canvas , return
+	if (!bMouseWithCanvas) return;//判断鼠标是否在画布上
 	//Calculate the tile quadrant,title index , and coordinates
 	const FIntPoint HoverItemCoordinates = CalculateHoverItemSize(CanavsPosition, MousePosition);
 
@@ -535,6 +542,25 @@ void USlim_InventoryGrid::OnTileParametersUpdated(const FSlimInventoryTileParame
 	ItemDropIndex = UInventoryWidgetUtils::GetInventoryIndexFromPosition( StartPoint , Columns );//通过位置获取网格索引
 	
 	CurrentSpaceQueryResult = CheckHoverPosition( StartPoint , HoverItemDimensions );
+
+	//检查返回结果是否有空间
+	if ( CurrentSpaceQueryResult.bHasSpace )
+	{
+		HighlightSlots( ItemDropIndex,HoverItemDimensions );//若有空间，则高亮显示格子
+		return;
+	}
+
+	//调用UnhighlightSlots函数取消高亮
+	UnHighlightSlots( ItemDropIndex, HoverItemDimensions );
+	//检查当前查询空间结果是否有效
+	if (CurrentSpaceQueryResult.ValidItem.IsValid() && GridSlots.IsValidIndex(CurrentSpaceQueryResult.UpperLeftIndex) )
+	{
+		//TODO：There`s a single item in the way , we can swap or add it.
+		const FSlimGridFragment* GridFragment = GetFragment<FSlimGridFragment>( CurrentSpaceQueryResult.ValidItem.Get() , FragmentTags::FragmentTags_GridFragment );
+		if (!GridFragment) return;
+
+		ChangeHoverType(CurrentSpaceQueryResult.UpperLeftIndex , GridFragment->GetGridSize() , ESlimGridSlotState::GrayedOut );//当前空间如果已经被占用 则变成灰色
+	}
 }
 FIntPoint USlim_InventoryGrid::CalculateStartPoint(const FIntPoint& Coordinate, const FIntPoint& Dimensions, const EInventoryTileQuadrant Quadrant) const
 {
@@ -568,15 +594,106 @@ FIntPoint USlim_InventoryGrid::CalculateStartPoint(const FIntPoint& Coordinate, 
 
 	return StartPoint;
 }
-FSlimSpaceQueryResult USlim_InventoryGrid::CheckHoverPosition(const FIntPoint& Position, const FIntPoint& Dimensions) const
+FSlimSpaceQueryResult USlim_InventoryGrid::CheckHoverPosition(const FIntPoint& Position, const FIntPoint& Dimensions)
 {
 	FSlimSpaceQueryResult Result;
 	//check hover position
 			// int the grid bounds?
 	if (!IsInGridBounds(UInventoryWidgetUtils::GetInventoryIndexFromPosition(Position, Columns), Dimensions))  return Result;
+
+	Result.bHasSpace = true;//设置空间查询结果为true
+	//if more than one of the indices  is occupied with the same item type , we need to see if they all have teh same upper left index.
+	TSet<int32> OccupiedUpperLeftIndices;
+	USlimInventoryStatics::ForEach2D(GridSlots, UInventoryWidgetUtils::GetInventoryIndexFromPosition(Position, Columns), Dimensions, Columns, [&]( const UInventoryGridSlot* GridSlot )
+	{
+		if ( GridSlot->GetInventoryItem().IsValid() )
+		{
+			OccupiedUpperLeftIndices.Add( GridSlot->GetUpperLeftIndex() );
+			Result.bHasSpace = false;//如果有占用的格子，则设置空间查询结果为false
+		}
+	}
+	);
 			// any items in the way ?
 			//if so , is there only one item in the way?( can we swap?)
+	//判断占有的左上角索引是否只有一个
+	if ( OccupiedUpperLeftIndices.Num() == 1 )
+	{
+		const int32 Index = *OccupiedUpperLeftIndices.CreateConstIterator();
+		Result.ValidItem = GridSlots[Index]->GetInventoryItem();//传递新的有效小部件
+		Result.UpperLeftIndex = GridSlots[Index]->GetUpperLeftIndex();//传递新的左上角索引
+	}
 	return Result;
+}
+bool USlim_InventoryGrid::CursorExitedCanvas(const FVector2D& BoundaryPos, const FVector2D& BoundarySize, const FVector2D& Location)
+{
+	bLastMouseWithCanvas = bMouseWithCanvas;
+
+	bMouseWithCanvas = UInventoryWidgetUtils::IsWithinGridBounds( BoundaryPos , BoundarySize , Location );
+	if (!bMouseWithCanvas && bLastMouseWithCanvas )
+	{
+		//TODO: Unhighlight the title
+		UnHighlightSlots( LastHighlightedIndex , LastHighlightedPosition  );
+		return true;//若鼠标离开画布，返回true
+	}
+	 
+	return false;
+}
+void USlim_InventoryGrid::HighlightSlots(const int32 Index, const FIntPoint& Dimensions)
+{
+	//判断鼠标是否在画布上
+	if ( !bMouseWithCanvas ) return;
+
+	UnHighlightSlots( LastHighlightedIndex , LastHighlightedPosition );
+
+	USlimInventoryStatics::ForEach2D(GridSlots, Index, Dimensions, Columns, [&](UInventoryGridSlot* GridSlot)
+	{
+		GridSlot->SetOccupiedTexture();
+	});
+
+	LastHighlightedIndex = Index;//记录上一次高亮的索引
+	LastHighlightedPosition = Dimensions;//记录上一次高亮的位置
+}
+void USlim_InventoryGrid::UnHighlightSlots(const int32 Index, const FIntPoint& Dimensions)
+{
+	//遍历网格
+	USlimInventoryStatics::ForEach2D(GridSlots, Index, Dimensions, Columns, [&](UInventoryGridSlot* GridSlot)
+	{
+		if (GridSlot->GetIsAvailable() )
+		{
+			GridSlot->SetUnoccupiedTexture();
+		}
+		else
+		{
+			GridSlot->SetOccupiedTexture();
+		}
+	});
+}
+void USlim_InventoryGrid::ChangeHoverType(const int32 Index, const FIntPoint& Dimensions, ESlimGridSlotState GridSlotState)
+{
+	UnHighlightSlots( LastHighlightedIndex , LastHighlightedPosition );
+	USlimInventoryStatics::ForEach2D(GridSlots, Index, Dimensions, Columns, [ State = GridSlotState ](UInventoryGridSlot* GridSlot)
+	{
+		//筛选匹配当前的Gridslot 的状态
+		switch (State)
+		{
+		case ESlimGridSlotState::Occupied:
+			GridSlot->SetOccupiedTexture();
+			break;
+		case ESlimGridSlotState::Unoccupied:
+			GridSlot->SetUnoccupiedTexture();
+			break;
+		case ESlimGridSlotState::Selected:
+			GridSlot->SetSelectedTexture();
+			break;
+		case ESlimGridSlotState::GrayedOut:
+			GridSlot->SetGrayedOutTexture();
+			break;
+		}
+	});
+
+	LastHighlightedIndex = Index;
+	LastHighlightedPosition = Dimensions;
+
 }
 #pragma endregion
 

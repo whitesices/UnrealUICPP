@@ -21,6 +21,8 @@ struct FSlimGridFragment;
 class USlimSlottedItem;
 class USlimHoverItem;
 struct FGameplayTag;
+//声明网格状态
+enum class ESlimGridSlotState : uint8;
 
 /**
  * 
@@ -98,6 +100,15 @@ private:
 	//声明拖拽的Index 和空间查询该位置可以放置的Item
 	int32 ItemDropIndex{INDEX_NONE};
 	FSlimSpaceQueryResult CurrentSpaceQueryResult;
+
+	//添加标志位
+	bool bMouseWithCanvas;
+	bool bLastMouseWithCanvas;
+
+	//声明变量记录上一个高亮的鼠标索引
+	int32 LastHighlightedIndex;
+	//声明变量记录上一个高亮的鼠标位置
+	FIntPoint LastHighlightedPosition;
 #pragma endregion
 
 	UPROPERTY( meta=(BindWidget) )
@@ -189,6 +200,15 @@ private:
 	//定义一个函数计算初始起点
 	FIntPoint CalculateStartPoint( const FIntPoint& Coordinate,const FIntPoint& Dimensions , const EInventoryTileQuadrant Quadrant ) const ;
 	//定义一个函数判断滑动的位置是否有效
-	FSlimSpaceQueryResult CheckHoverPosition( const FIntPoint& Position , const FIntPoint& Dimensions) const;
+	/*FSlimSpaceQueryResult CheckHoverPosition( const FIntPoint& Position , const FIntPoint& Dimensions) const;*/
+	FSlimSpaceQueryResult CheckHoverPosition(const FIntPoint& Position, const FIntPoint& Dimensions);
+	//定义一个函数来判断是否超出当前的画布边界
+	bool CursorExitedCanvas(const FVector2D& BoundaryPos , const FVector2D& BoundarySize , const FVector2D& Location );
+
+	//定义高亮和不高亮的方法
+	void HighlightSlots( const int32 Index , const FIntPoint& Dimensions);
+	void UnHighlightSlots( const int32 Index, const FIntPoint& Dimensions );
+	//声明改变Hover状态的方法
+	void ChangeHoverType( const int32 Index , const FIntPoint& Dimensions , ESlimGridSlotState GridSlotState );
 #pragma endregion
 };

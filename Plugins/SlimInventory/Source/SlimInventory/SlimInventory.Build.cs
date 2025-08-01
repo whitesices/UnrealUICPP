@@ -30,6 +30,7 @@ public class SlimInventory : ModuleRules
 				"NetCore",//引入网络核心模块
 				"StructUtils",
 				"GameplayTags",//引入GameplayTags模块
+				"EnhancedInput"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -44,7 +45,8 @@ public class SlimInventory : ModuleRules
 				"SlateCore",
                 "EnhancedInput",//引入增强输入模块
 				"UMG",//引入UMG模块
-				"InputCore"//引入输入核心模块
+				"StructUtils",
+                "InputCore"//引入输入核心模块
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
