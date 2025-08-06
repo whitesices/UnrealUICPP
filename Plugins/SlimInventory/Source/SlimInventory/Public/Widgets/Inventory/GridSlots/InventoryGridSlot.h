@@ -9,6 +9,9 @@
 class USlimInventoryItem;
 class UImage;
 
+//声明动态多播
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams( FGridSlotEvent , int32 , GridIndex , const FPointerEvent& , MouseEvent );
+
 //新建新的插槽图片状态
 UENUM(BlueprintType)
 enum class ESlimGridSlotState : uint8
@@ -28,6 +31,10 @@ class SLIMINVENTORY_API UInventoryGridSlot : public UUserWidget
 {
 	GENERATED_BODY()
 public:
+	//重载鼠标移动事件
+	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
+	virtual FReply NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
 	//设置小格子索引
 	void SetTileIndex(int32 Index) { TileIndex = Index; }
 	//获取TileIndex
@@ -57,6 +64,11 @@ public:
 	void SetUnoccupiedTexture();
 	void SetSelectedTexture();
 	void SetGrayedOutTexture();
+
+	//声明委托绑定
+	FGridSlotEvent GridSlotClicked;
+	FGridSlotEvent GridSlotHovered;
+	FGridSlotEvent GridSlotUnhovered;
 	
 private:
 	int32 TileIndex{INDEX_NONE};

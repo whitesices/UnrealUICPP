@@ -26,6 +26,41 @@
 #include "GameplayTagContainer.h"//引入GameplaytagContainer头文件
 #include "Widgets/Inventory/HoverItem/SlimHoverItem.h"
 
+
+
+void USlim_InventoryGrid::ConstructGrid()
+{
+	GridSlots.Reserve(Rows * Columns);
+
+	//循环遍历
+	for (int32 j = 0; j < Rows; ++j)
+	{
+		for (int32 i = 0; i < Columns; ++i)
+		{
+			//创建相应的网格
+			UInventoryGridSlot* GridSlot = CreateWidget<UInventoryGridSlot>(this, GridSlotClass);
+			CanvasPanel->AddChild(GridSlot);
+
+			//创建声明对应的点位
+			const FIntPoint TilePosition(i, j);
+			GridSlot->SetTileIndex(UInventoryWidgetUtils::GetInventoryIndexFromPosition(TilePosition, Columns));
+
+			//声明画布插槽
+			UCanvasPanelSlot* GridCPS = UWidgetLayoutLibrary::SlotAsCanvasSlot(GridSlot);
+			//设置尺寸与位置信息
+			GridCPS->SetSize(FVector2D(TileSize));
+			GridCPS->SetPosition(TilePosition * TileSize);
+
+			//观察者模式绑定鼠标事件触发
+			GridSlot->GridSlotClicked.AddDynamic( this , &ThisClass::OnSlottedClicked);
+			GridSlot->GridSlotHovered.AddDynamic( this , &ThisClass::OnSlottedHovered);
+			GridSlot->GridSlotUnhovered.AddDynamic(this, &ThisClass::OnSlottedUnhovered);
+
+			GridSlots.Add(GridSlot);
+		}
+	}
+}
+
 #pragma region 覆写函数
 void USlim_InventoryGrid::NativeOnInitialized()
 {
@@ -407,6 +442,8 @@ void USlim_InventoryGrid::OnSlottedItemClicked(int32 InGridIndex, const FPointer
 	}
 }
 
+
+
 bool USlim_InventoryGrid::IsRightClick(const FPointerEvent& InMouseEvent) const
 {
 	return InMouseEvent.GetEffectingButton() == EKeys::RightMouseButton;
@@ -697,6 +734,68 @@ void USlim_InventoryGrid::ChangeHoverType(const int32 Index, const FIntPoint& Di
 }
 #pragma endregion
 
+#pragma region 鼠标滑动网格操作
+void USlim_InventoryGrid::OnSlottedClicked(int32 GridIndex, const FPointerEvent& MouseEvent)
+{
+	if ( !IsValid(HoverItem) ) return;//判断Hover的有效性
+	if (!GridSlots.IsValidIndex(ItemDropIndex)) return;//判断GridSlots的index的索引性
+
+	if ( CurrentSpaceQueryResult.ValidItem.IsValid() && GridSlots.IsValidIndex(CurrentSpaceQueryResult.UpperLeftIndex) )
+	{
+		OnSlottedItemClicked(GridIndex , MouseEvent);
+	}
+
+	UInventoryGridSlot* GridSlot = GridSlots[ItemDropIndex];
+	if ( !GridSlot->GetInventoryItem().IsValid() )
+	{
+		//TODO: Put item Down at this index
+		PutDown(ItemDropIndex);
+	}
+}
+void USlim_InventoryGrid::OnSlottedHovered(int32 GridIndex, const FPointerEvent& MouseEvent)
+{
+	//判断HoverItem是否有效
+	if ( IsValid(HoverItem) ) return;
+
+	UInventoryGridSlot* GridSlot = GridSlots[GridIndex];
+	if (GridSlot->GetIsAvailable())//判断是否有效
+	{
+		GridSlot->SetOccupiedTexture();
+	}
+}
+void USlim_InventoryGrid::OnSlottedUnhovered(int32 GridIndex, const FPointerEvent& MouseEvent)
+{
+	//判断HoverItem是否有效
+	if (IsValid(HoverItem)) return;
+	UInventoryGridSlot* GridSlot = GridSlots[GridIndex];
+	if (GridSlot->GetIsAvailable())
+	{
+		GridSlot->SetUnoccupiedTexture();
+	}
+}
+void USlim_InventoryGrid::PutDown(const int32 Index)
+{
+	AddItemAtIndex( HoverItem->GetInventoryItem() ,Index, HoverItem->IsStackable() , HoverItem->GetStackCount() );
+	UpdateGridSlots( HoverItem->GetInventoryItem(), Index, HoverItem->IsStackable(), HoverItem->GetStackCount() );
+	ClearHoverItem();
+}
+void USlim_InventoryGrid::ClearHoverItem()
+{
+	if (!IsValid(HoverItem)) return;
+
+	HoverItem->SetInventoryItem( nullptr );
+	HoverItem->SetPreviousGridIndex(INDEX_NONE);
+	HoverItem->UpdateStackCountText(0);
+	HoverItem->SetImageBrush(FSlateNoResource());
+	HoverItem->SetIsStackable(false);
+
+	/*HoverItem->SetVisibility(ESlateVisibility::Collapsed);*/
+	HoverItem->RemoveFromParent();
+	HoverItem = nullptr;
+}
+#pragma endregion
+
+
 //void USlim_InventoryGrid::UpdateGridSlots(USlimInventoryItem* NewItem, const int32 Index)
 //{
 //	//检查网格插槽索引的有效性
@@ -765,33 +864,7 @@ void USlim_InventoryGrid::AddStackNumer(const FSlimSlotAvailabilityResult& Resul
 
 #pragma endregion
 
-void USlim_InventoryGrid::ConstructGrid()
-{
-	GridSlots.Reserve( Rows * Columns );
 
-	//循环遍历
-	for (int32 j = 0 ; j < Rows; ++j )
-	{
-		for (int32 i = 0 ; i < Columns; ++i )
-		{
-			//创建相应的网格
-			UInventoryGridSlot* GridSlot = CreateWidget<UInventoryGridSlot>(this , GridSlotClass);
-			CanvasPanel->AddChild( GridSlot );
-
-			//创建声明对应的点位
-			const FIntPoint TilePosition(i , j);
-			GridSlot->SetTileIndex( UInventoryWidgetUtils::GetInventoryIndexFromPosition( TilePosition , Columns ) );
-
-			//声明画布插槽
-			UCanvasPanelSlot* GridCPS = UWidgetLayoutLibrary::SlotAsCanvasSlot(GridSlot);
-			//设置尺寸与位置信息
-			GridCPS->SetSize( FVector2D(TileSize) );
-			GridCPS->SetPosition( TilePosition * TileSize );
-
-			GridSlots.Add(GridSlot);
-		}
-	}
-}
 
 bool USlim_InventoryGrid::MatchesCategory(const USlimInventoryItem* Item) const
 {

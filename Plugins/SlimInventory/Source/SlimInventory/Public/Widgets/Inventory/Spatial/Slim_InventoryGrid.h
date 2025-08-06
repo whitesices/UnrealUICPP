@@ -211,4 +211,17 @@ private:
 	//声明改变Hover状态的方法
 	void ChangeHoverType( const int32 Index , const FIntPoint& Dimensions , ESlimGridSlotState GridSlotState );
 #pragma endregion
+
+#pragma region 鼠标滑动网格操作
+	UFUNCTION()
+	void OnSlottedClicked( int32 GridIndex , const FPointerEvent& MouseEvent );
+	UFUNCTION()
+	void OnSlottedHovered(int32 GridIndex, const FPointerEvent& MouseEvent);
+
+	UFUNCTION()
+	void OnSlottedUnhovered(int32 GridIndex, const FPointerEvent& MouseEvent);
+
+	void PutDown( const int32 Index );
+	void ClearHoverItem();
+#pragma endregion
 };

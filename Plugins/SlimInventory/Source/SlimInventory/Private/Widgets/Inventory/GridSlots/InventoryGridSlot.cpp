@@ -6,6 +6,24 @@
 #include "Components/Image.h"
 #include "Items/SlimInventoryItem.h"
 
+void UInventoryGridSlot::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
+	GridSlotHovered.Broadcast( TileIndex , InMouseEvent );
+}
+
+void UInventoryGridSlot::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+	Super::NativeOnMouseLeave(InMouseEvent);
+	GridSlotUnhovered.Broadcast(TileIndex,InMouseEvent);
+}
+
+FReply UInventoryGridSlot::NativeOnPreviewMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	GridSlotClicked.Broadcast( TileIndex , InMouseEvent );
+	return FReply::Handled();
+}
+
 void UInventoryGridSlot::SetSlimInventoryItem(USlimInventoryItem* Item)
 {
 	InventoryItem = Item;//设置相应的参数
