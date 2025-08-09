@@ -439,7 +439,51 @@ void USlim_InventoryGrid::OnSlottedItemClicked(int32 InGridIndex, const FPointer
 	{
 		//TODO: PickUp - Assign the hover item , and remove the slotted item from the grid
 		PickUp(ClickedItem, InGridIndex);
+		return;
 	}
+
+	//Do the hovered item and clicked inventory item share a type , and are they stackable?
+	if (IsSameStackable(ClickedItem))
+	{
+		const int32 ClickedStackCount = GridSlots[InGridIndex]->GetStackCount();
+		const FSlimStackFragment* StackableFragment = ClickedItem->GetItemManifest().GetFragmentOfType<FSlimStackFragment>();
+		const int32 MaxStackSize = StackableFragment->GetMaxStackSize();
+		const int32 RoomInClickedSlot = MaxStackSize - ClickedStackCount;
+		const int32 HoveredStackCount = HoverItem->GetStackCount();
+		//should we swap their stack cousnts?(Room in the clicked slot == 0 && HoveredStackCount < MaxStackSize )
+		if ( ShouldSwapStackCounts(RoomInClickedSlot , HoveredStackCount , MaxStackSize ))
+		{
+			//TODO :Swap Stack size
+			SwapStackCounts( ClickedStackCount , HoveredStackCount ,InGridIndex );//交换堆叠数小换大
+			return;
+		}
+		//should we consume the hover item`s stacks?
+		if ( ShouldConsumeHoverItemStacks(HoveredStackCount, RoomInClickedSlot) )
+		{
+			ConsumeHoverItemStacks(ClickedStackCount, HoveredStackCount, InGridIndex);//合并相同的消耗品
+			return;
+		}
+
+
+
+		//should we fill in the stacks of the clicked item? ( and not consume the hover item)
+		if (ShouldFillInStack( HoveredStackCount, RoomInClickedSlot) && RoomInClickedSlot > 0 )
+		{
+			FillStack(RoomInClickedSlot, HoveredStackCount - RoomInClickedSlot , InGridIndex);
+			return;
+		}
+
+		//// Is there no room in the clicked slot?
+		//点击的插槽已经满了 不做任何操作
+		if (RoomInClickedSlot == 0)
+		{
+			return;
+		}
+
+	/*	return;*/
+	}
+	//Swap with the hover item.
+	SwapWithHoverItem(ClickedItem, InGridIndex);
 }
 
 
@@ -742,10 +786,13 @@ void USlim_InventoryGrid::OnSlottedClicked(int32 GridIndex, const FPointerEvent&
 
 	if ( CurrentSpaceQueryResult.ValidItem.IsValid() && GridSlots.IsValidIndex(CurrentSpaceQueryResult.UpperLeftIndex) )
 	{
-		OnSlottedItemClicked(GridIndex , MouseEvent);
+		/*OnSlottedItemClicked(GridIndex , MouseEvent);*/
+		OnSlottedItemClicked(CurrentSpaceQueryResult.UpperLeftIndex, MouseEvent);
+		return;
 	}
 
-	UInventoryGridSlot* GridSlot = GridSlots[ItemDropIndex];
+	/*UInventoryGridSlot* GridSlot = GridSlots[ItemDropIndex];*/
+	auto GridSlot = GridSlots[ItemDropIndex];
 	if ( !GridSlot->GetInventoryItem().IsValid() )
 	{
 		//TODO: Put item Down at this index
@@ -778,6 +825,7 @@ void USlim_InventoryGrid::PutDown(const int32 Index)
 	AddItemAtIndex( HoverItem->GetInventoryItem() ,Index, HoverItem->IsStackable() , HoverItem->GetStackCount() );
 	UpdateGridSlots( HoverItem->GetInventoryItem(), Index, HoverItem->IsStackable(), HoverItem->GetStackCount() );
 	ClearHoverItem();
+	
 }
 void USlim_InventoryGrid::ClearHoverItem()
 {
@@ -792,6 +840,128 @@ void USlim_InventoryGrid::ClearHoverItem()
 	/*HoverItem->SetVisibility(ESlateVisibility::Collapsed);*/
 	HoverItem->RemoveFromParent();
 	HoverItem = nullptr;
+
+	ShowTheCursor();//显示滑动鼠标
+}
+
+UUserWidget* USlim_InventoryGrid::GetVisibleCursorWidget()
+{
+	//判断player是否有效
+	if (!IsValid(GetOwningPlayer())) return nullptr;
+	if (!IsValid(VisibleCursorWidget))
+	{
+		VisibleCursorWidget = CreateWidget<UUserWidget>( GetOwningPlayer() , VisibleCursorWidgetClass );
+	}
+
+	return VisibleCursorWidget;
+}
+
+UUserWidget* USlim_InventoryGrid::GetHiddenCursorWidget()
+{
+	//判断Player是否有效
+	if (!IsValid( GetOwningPlayer() )) return nullptr;
+	if (!IsValid(HiddenCursorWidget))
+	{
+		HiddenCursorWidget = CreateWidget<UUserWidget>( GetOwningPlayer() , HiddenCursorWidgetClass );
+	}
+
+	return HiddenCursorWidget;
+}
+
+bool USlim_InventoryGrid::IsSameStackable(const USlimInventoryItem* ClickedInventoryItem) const
+{
+	const bool bIsSameItem = (ClickedInventoryItem == HoverItem->GetInventoryItem());
+	const bool bIsStackable = (ClickedInventoryItem->IsStackable());
+
+	return bIsSameItem && bIsStackable && HoverItem->GetItemType().MatchesTagExact( ClickedInventoryItem->GetItemManifest().GetItemType() );
+}
+
+void USlim_InventoryGrid::SwapWithHoverItem(USlimInventoryItem* ClickedInventoryItem, const int32 GridIndex)
+{
+	//判断Hover是否存在
+	if (!IsValid(HoverItem)) return;
+	//临时变量存储
+	USlimInventoryItem* TempInventoryItem = HoverItem->GetInventoryItem();
+	const int32 TempStackCount = HoverItem->GetStackCount();
+	const bool bTempIsStackable = HoverItem->IsStackable();
+
+	//与之前的网格索引保持一致
+	AssignHoverItem( ClickedInventoryItem , GridIndex , HoverItem->GetPreviousGridIndex() );
+	RemoveItemFromGrid( ClickedInventoryItem , GridIndex );
+	//更新放下的Item
+	AddItemAtIndex(TempInventoryItem, ItemDropIndex , bTempIsStackable, TempStackCount);
+	UpdateGridSlots(TempInventoryItem, ItemDropIndex, bTempIsStackable, TempStackCount);
+}
+
+bool USlim_InventoryGrid::ShouldSwapStackCounts(const int32 RoomInClickedSlot, const int32 HoveredStackCount, const int32 MaxStackSize) const
+{
+	return RoomInClickedSlot == 0 && HoveredStackCount < MaxStackSize;
+}
+
+void USlim_InventoryGrid::SwapStackCounts(const int32 ClickedStackCount, const int32 HoveredStackCount, const int32 Index)
+{
+	UInventoryGridSlot* GridSlot = GridSlots[Index];
+	GridSlot->SetStackCount(HoveredStackCount);
+
+	USlimSlottedItem* ClickedSlottedItem = SlottedItems.FindChecked(Index);
+	ClickedSlottedItem->UpdateStackCount(HoveredStackCount);
+
+	HoverItem->UpdateStackCountText(ClickedStackCount);
+}
+
+bool USlim_InventoryGrid::ShouldConsumeHoverItemStacks(const int32 HoveredStackCount, const int32 RoomInClickedSlot) const
+{
+	return RoomInClickedSlot >= HoveredStackCount;
+}
+
+void USlim_InventoryGrid::ConsumeHoverItemStacks(const int32 ClickedStackCount, const int32 HoverItemStackCount, const int32 Index)
+{
+	const int32 AmountToTransfer = HoverItemStackCount;
+	const int32 NewClickedStackCount = ClickedStackCount + AmountToTransfer;
+
+	GridSlots[Index]->SetStackCount(NewClickedStackCount);
+
+	SlottedItems.FindChecked(Index)->UpdateStackCount(NewClickedStackCount);
+	ClearHoverItem();
+	/*ShowTheCursor()*/
+
+	const FSlimGridFragment* GridFragment = GridSlots[Index]->GetInventoryItem()->GetItemManifest().GetFragmentOfType<FSlimGridFragment>();
+	const FIntPoint Dimensions = GridFragment ? GridFragment->GetGridSize() : FIntPoint(1,1);
+	HighlightSlots(Index, Dimensions);
+
+}
+
+bool USlim_InventoryGrid::ShouldFillInStack(const int32 HoveredStackCount, const int32 RoomInClickedSlot) const
+{
+	return HoveredStackCount > RoomInClickedSlot ;
+}
+
+void USlim_InventoryGrid::FillStack(const int32 FillAmount, const int32 Remainder, const int32 Index)
+{
+	UInventoryGridSlot* GridSlot = GridSlots[Index];
+	const int32 NewStackCount = GridSlot->GetStackCount() + FillAmount;
+	GridSlot->SetStackCount(NewStackCount);
+	USlimSlottedItem* ClickedSlottedItem = SlottedItems.FindChecked(Index);
+
+	ClickedSlottedItem->UpdateStackCount(NewStackCount);
+	HoverItem->UpdateStackCountText(Remainder);
+}
+
+#pragma endregion
+
+#pragma region 鼠标滑动操作
+//Mouse Cursor Operation
+void USlim_InventoryGrid::ShowTheCursor()
+{
+	//判断Player是否有效
+	if (!IsValid(GetOwningPlayer())) return;
+	GetOwningPlayer()->SetMouseCursorWidget( EMouseCursor::Default , GetVisibleCursorWidget() );//设置光标事件
+}
+void USlim_InventoryGrid::HideTheCursor()
+{
+	//判断Player是否有效
+	if (!IsValid(GetOwningPlayer())) return;
+	GetOwningPlayer()->SetMouseCursorWidget( EMouseCursor::Default , GetHiddenCursorWidget() );
 }
 #pragma endregion
 

@@ -57,7 +57,10 @@ public:
 	//定义SlottedItem的点击事件
 	UFUNCTION()
 	void OnSlottedItemClicked( int32 InGridIndex , const FPointerEvent& InMouseEvent );
-
+#pragma region 鼠标滑动操作
+	void ShowTheCursor();
+	void HideTheCursor();
+#pragma endregion
 private:
 	//自定义初始化Grid函数
 	void ConstructGrid();
@@ -121,6 +124,18 @@ private:
 	
 	UPROPERTY( EditAnywhere , Category="Inventory")
 	float TileSize;
+#pragma region 鼠标滑动操作
+	UPROPERTY(EditAnywhere , Category="Inventory")
+	TSubclassOf<UUserWidget> VisibleCursorWidgetClass;
+	UPROPERTY(EditAnywhere , Category="Inventory")
+	TSubclassOf<UUserWidget> HiddenCursorWidgetClass;
+
+	//声明变量来存储传入的CursorWidget
+	UPROPERTY()
+	TObjectPtr<UUserWidget> VisibleCursorWidget;
+	UPROPERTY()
+	TObjectPtr<UUserWidget> HiddenCursorWidget;
+#pragma endregion
 
 	//定义是否匹配属性的方法
 	bool MatchesCategory( const USlimInventoryItem* Item ) const;
@@ -223,5 +238,19 @@ private:
 
 	void PutDown( const int32 Index );
 	void ClearHoverItem();
+
+	UUserWidget* GetVisibleCursorWidget();
+	UUserWidget* GetHiddenCursorWidget();
+
+	//判断是否是同一个堆叠
+	bool IsSameStackable( const USlimInventoryItem* ClickedInventoryItem) const;
+	void SwapWithHoverItem( USlimInventoryItem* ClickedInventoryItem , const int32 GridIndex );
+	bool ShouldSwapStackCounts(const int32 RoomInClickedSlot , const int32 HoveredStackCount , const int32 MaxStackSize ) const ;
+	void SwapStackCounts( const int32 ClickedStackCount , const int32 HoveredStackCount , const int32 Index);
+	bool ShouldConsumeHoverItemStacks( const int32 HoveredStackCount , const int32 RoomInClickedSlot ) const;
+	void ConsumeHoverItemStacks(const int32 ClickedStackCount , const int32 HoverItemStackCount , const int32 Index);
+	bool ShouldFillInStack(const int32 HoveredStackCount , const int32 RoomInClickedSlot) const;
+	void FillStack(const int32 FillAmount, const int32 Remainder, const int32 Index);
+	
 #pragma endregion
 };

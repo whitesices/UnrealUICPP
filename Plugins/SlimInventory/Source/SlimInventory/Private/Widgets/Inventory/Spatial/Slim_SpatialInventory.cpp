@@ -72,6 +72,10 @@ void USlim_SpatialInventory::ResetButtonStates(UButton* Button)
 
 void USlim_SpatialInventory::SetActivateGrid(USlim_InventoryGrid* Grid, UButton* Button)
 {
+	if (ActivateGrid.IsValid()) ActivateGrid->HideTheCursor();
+	ActivateGrid = Grid;
+	if (ActivateGrid.IsValid()) ActivateGrid->ShowTheCursor();
+
 	ResetButtonStates(Button);
 	Switcher->SetActiveWidget(Grid);
 }

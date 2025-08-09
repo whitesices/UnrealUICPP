@@ -45,6 +45,9 @@ private:
 	UPROPERTY( meta = (BindWidget) )
 	TObjectPtr<UButton> Button_Craftables;
 
+	//声明激活的网格
+	TWeakObjectPtr<USlim_InventoryGrid> ActivateGrid;
+
 	//声明显示的网格类型
 	UFUNCTION()
 	void ShowEquippables();

@@ -25,7 +25,7 @@ public:
 	//设置图片
 	void SetImageBrush(const FSlateBrush& Brush) const;
 	//更新文本
-	void UpdateStackCountText(const int32 Count ) const ;
+	void UpdateStackCountText(const int32 Count ) ;
 
 	//获取/修改私有成员变量
 	int32 GetPreviousGridIndex() const { return PreviousGridIndex; }
