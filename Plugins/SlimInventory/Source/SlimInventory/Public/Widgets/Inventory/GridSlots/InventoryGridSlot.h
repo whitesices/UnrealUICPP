@@ -8,6 +8,7 @@
 
 class USlimInventoryItem;
 class UImage;
+class USlimItemPopUp;
 
 //声明动态多播
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams( FGridSlotEvent , int32 , GridIndex , const FPointerEvent& , MouseEvent );
@@ -59,6 +60,9 @@ public:
 	bool GetIsAvailable() const { return bAvailable; }
 	void SetAvailable(bool bIsAvailble) { bAvailable = bIsAvailble; }
 
+	void SetItemPopup(USlimItemPopUp* PopUp);
+	USlimItemPopUp* GetItemPopup() const;
+
 	//设置各个图片状态
 	void SetOccupiedTexture();
 	void SetUnoccupiedTexture();
@@ -78,6 +82,9 @@ private:
 	TWeakObjectPtr<USlimInventoryItem> InventoryItem;
 	bool bAvailable{true};//是否有效
 
+	//声明弹出UI的变量
+	TWeakObjectPtr<USlimItemPopUp> ItemPopup;//类似于在Grid中定义ItemPopup判断是否有值传入判断是否创建UI
+
 	UPROPERTY( meta=(BindWidget) )
 	TObjectPtr<UImage> Image_GridSlot;
 
@@ -93,4 +100,7 @@ private:
 
 	//声明存储网格状态的变量
 	ESlimGridSlotState GridSlotState;
+
+	UFUNCTION()
+	void OnItemPopUpDestruct( UUserWidget* Menu);
 };

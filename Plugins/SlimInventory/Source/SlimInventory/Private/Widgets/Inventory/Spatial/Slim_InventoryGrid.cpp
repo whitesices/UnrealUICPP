@@ -25,6 +25,7 @@
 
 #include "GameplayTagContainer.h"//引入GameplaytagContainer头文件
 #include "Widgets/Inventory/HoverItem/SlimHoverItem.h"
+#include "Widgets/ItemPop/SlimItemPopUp.h"//引入ItemPopup的头文件
 
 
 
@@ -439,6 +440,13 @@ void USlim_InventoryGrid::OnSlottedItemClicked(int32 InGridIndex, const FPointer
 	{
 		//TODO: PickUp - Assign the hover item , and remove the slotted item from the grid
 		PickUp(ClickedItem, InGridIndex);
+		return;
+	}
+
+	//添加鼠标右键弹出菜单事件操作
+	if ( IsRightClick(InMouseEvent))
+	{
+		CreateItemPop(InGridIndex);//调用创建ItemPopUpUI
 		return;
 	}
 
@@ -962,6 +970,94 @@ void USlim_InventoryGrid::HideTheCursor()
 	//判断Player是否有效
 	if (!IsValid(GetOwningPlayer())) return;
 	GetOwningPlayer()->SetMouseCursorWidget( EMouseCursor::Default , GetHiddenCursorWidget() );
+}
+
+#pragma endregion
+
+#pragma region 右键鼠标操作
+
+void USlim_InventoryGrid::CreateItemPop(const int32 GridIndex)
+{
+	USlimInventoryItem* RightClickedItem = GridSlots[GridIndex]->GetInventoryItem().Get();
+	if (!RightClickedItem) return;
+	//if (!IsValid(ItemPopup))//自定义的判断菜单是否有效
+	//{
+	//	ItemPopup = CreateWidget<USlimItemPopUp>( this , ItemPopupClass );
+	//}
+
+	if (IsValid(GridSlots[GridIndex]->GetItemPopup())) return;//判断ItemPopup是否有效
+
+	ItemPopup = CreateWidget<USlimItemPopUp>(this, ItemPopupClass);
+	GridSlots[GridIndex]->SetItemPopup(ItemPopup);//设置PopUpUI
+
+	OwningCanvasPanel->AddChild(ItemPopup);//添加弹出界面UI
+	UCanvasPanelSlot* CanvasSlot = UWidgetLayoutLibrary::SlotAsCanvasSlot(ItemPopup);//将弹出菜单UI添加到画布插槽中
+	const FVector2D MousePosition = UWidgetLayoutLibrary::GetMousePositionOnViewport( GetOwningPlayer() );//获取鼠标位置
+	//CanvasSlot->SetPosition(MousePosition);
+	//设置弹出菜单的位置
+	CanvasSlot->SetPosition( MousePosition - ItemPopUpOffset );
+	CanvasSlot->SetSize( ItemPopup->GetBoxSzie() );
+
+#pragma region 滑动条以及相应按钮的状态
+	const int32 SliderMax = GridSlots[GridIndex]->GetStackCount() - 1;
+	if (RightClickedItem->IsStackable() && SliderMax > 0)
+	{
+		ItemPopup->MenuSplit.BindDynamic( this , &ThisClass::OnPopUpMenuSplit);
+		ItemPopup->SetSliderParams(SliderMax , FMath::Max( 1 , GridSlots[GridIndex]->GetStackCount()/2 ) );
+	}
+	else
+	{
+		ItemPopup->collapseSplitButton();
+	}
+
+	ItemPopup->MenuDrop.BindDynamic( this , &ThisClass::OnPopUpMenuDrop);
+
+	if (RightClickedItem->IsConsumable())
+	{
+		ItemPopup->MenuConsume.BindDynamic( this , &ThisClass::OnPopUpMenuConsume);
+	}
+	else
+	{
+		ItemPopup->collapseConsumeBUtton();
+	}
+#pragma endregion
+}
+
+void USlim_InventoryGrid::OnPopUpMenuSplit(int32 SplitAmount, int32 Index)
+{
+	//获取鼠标右键获取的对象部件
+	USlimInventoryItem* RightClickedItem = GridSlots[Index]->GetInventoryItem().Get();
+	//判断获取的对象是否有效
+	if (!IsValid(RightClickedItem) ) return;
+	//判断该对象是否可以堆叠
+	if (!RightClickedItem->IsStackable()) return;
+
+	//获取左上角索引
+	const int32 UpperLeftIndex = GridSlots[Index]->GetUpperLeftIndex();
+	UInventoryGridSlot* UpperLeftSlot = GridSlots[UpperLeftIndex];
+	const int32 CurrentStackCount = UpperLeftSlot->GetStackCount();
+	const int32 NewStackCount = CurrentStackCount - SplitAmount;
+
+	//更新左上角索引的堆叠数量
+	UpperLeftSlot->SetStackCount(NewStackCount);
+	SlottedItems.FindChecked(UpperLeftIndex)->UpdateStackCount(NewStackCount);
+
+	//给HoverItem赋值
+	AssignHoverItem( RightClickedItem , UpperLeftIndex , UpperLeftIndex );
+	HoverItem->UpdateStackCountText( SplitAmount );//更新堆叠数量文本
+}
+
+void USlim_InventoryGrid::OnPopUpMenuDrop(int32 Index)
+{
+}
+
+void USlim_InventoryGrid::OnPopUpMenuConsume(int32 Index)
+{
+}
+
+void USlim_InventoryGrid::SetOwningCanvasPanel(UCanvasPanel* OwningCanvas)
+{
+	OwningCanvasPanel = OwningCanvas;
 }
 #pragma endregion
 

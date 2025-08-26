@@ -47,6 +47,9 @@ public:
 	//定义一个判断是否可以堆叠的方法
 	bool IsStackable() const;
 
+	//定义一个函数判断是否是可以消耗的
+	bool IsConsumable() const;
+
 	//定义和获取堆叠总数相关的函数
 	int32 GetTotalStackCount() const { return TotalStackCount; }
 	void SetTotalStackCount(int32 Count) { TotalStackCount = Count; }

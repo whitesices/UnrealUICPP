@@ -25,3 +25,8 @@ bool USlimInventoryItem::IsStackable() const
 	const FSlimStackFragment* stackableFragment = GetItemManifest().GetFragmentOfType<FSlimStackFragment>();
 	return stackableFragment != nullptr;
 }
+
+bool USlimInventoryItem::IsConsumable() const
+{
+	return GetItemManifest().GetItemCatgory() == EInventory_ItemCategory::Consumable;//将部件分类设定为消耗品
+}

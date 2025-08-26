@@ -12,7 +12,7 @@ class UInventoryGridSlot;
 class UCanvasPanel;
 class USlimInventoryComponent;
 class USlimInventoryItem;
-
+class USlimItemPopUp;//前置声明ItemPopUp
 class USlimInventoryItemComponent;
 struct FSlimItemManifest;
 
@@ -61,6 +61,10 @@ public:
 	void ShowTheCursor();
 	void HideTheCursor();
 #pragma endregion
+
+#pragma region 右键弹出菜单
+	void SetOwningCanvasPanel( UCanvasPanel* OwningCanvas);
+#pragma endregion
 private:
 	//自定义初始化Grid函数
 	void ConstructGrid();
@@ -96,6 +100,10 @@ private:
 	UPROPERTY()
 	TObjectPtr<USlimHoverItem> HoverItem;
 
+	//添加ItemPopUp的偏移量
+	UPROPERTY( EditAnywhere , Category="Inventory")
+	FVector2D ItemPopUpOffset;
+
 	//声明定义图块参数以及前一个图块参数
 	FSlimInventoryTileParameters TileParameters;
 	FSlimInventoryTileParameters LastTileParameters;
@@ -124,6 +132,19 @@ private:
 	
 	UPROPERTY( EditAnywhere , Category="Inventory")
 	float TileSize;
+
+#pragma region 右键弹出菜单
+	//声明一个画布
+	TWeakObjectPtr<UCanvasPanel> OwningCanvasPanel;
+
+	UPROPERTY(EditAnywhere , Category="Inventory")
+	TSubclassOf<USlimItemPopUp> ItemPopupClass;
+
+	UPROPERTY(VisibleAnywhere , Category="Inventory")
+	TObjectPtr<USlimItemPopUp> ItemPopup;
+#pragma endregion
+
+
 #pragma region 鼠标滑动操作
 	UPROPERTY(EditAnywhere , Category="Inventory")
 	TSubclassOf<UUserWidget> VisibleCursorWidgetClass;
@@ -252,5 +273,18 @@ private:
 	bool ShouldFillInStack(const int32 HoveredStackCount , const int32 RoomInClickedSlot) const;
 	void FillStack(const int32 FillAmount, const int32 Remainder, const int32 Index);
 	
+#pragma endregion
+
+#pragma region 右键弹出鼠标操作
+	void CreateItemPop( const int32 GridIndex );
+
+	UFUNCTION()
+	void OnPopUpMenuSplit( int32 SplitAmount , int32 Index );
+
+	UFUNCTION()
+	void OnPopUpMenuDrop( int32 Index );
+
+	UFUNCTION()
+	void OnPopUpMenuConsume( int32 Index );
 #pragma endregion
 };

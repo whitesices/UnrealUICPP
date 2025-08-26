@@ -9,6 +9,7 @@
 class USlim_InventoryGrid;
 class UWidgetSwitcher;
 class UButton;
+class UCanvasPanel;
 /**
  * 
  */
@@ -24,6 +25,10 @@ public:
 	virtual FSlimSlotAvailabilityResult HasRoomForItem(USlimInventoryItemComponent* ItemComponent) const override;
 
 private:
+	//添加画布
+	UPROPERTY( meta = (BindWidget) )
+	TObjectPtr<UCanvasPanel> CanvasPanel;
+
 	//声明选择器小部件
 	UPROPERTY( meta = (BindWidget) )
 	TObjectPtr<UWidgetSwitcher> Switcher;

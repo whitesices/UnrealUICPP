@@ -10,6 +10,7 @@
 
 #include "SlimInventory.h"
 #include "InventoryManagement/Utils/SlimInventoryStatics.h"
+#include "Components/CanvasPanel.h"
 
 void USlim_SpatialInventory::NativeOnInitialized()
 {
@@ -19,6 +20,11 @@ void USlim_SpatialInventory::NativeOnInitialized()
 	Button_Equippables->OnClicked.AddDynamic( this , &ThisClass::ShowEquippables);
 	Button_Consumables->OnClicked.AddDynamic( this , &ThisClass::ShowConsumables);
 	Button_Craftables->OnClicked.AddDynamic(this , &ThisClass::ShowCraftables);
+
+	//声明各个网格的绑定
+	Grid_Equippables->SetOwningCanvasPanel(CanvasPanel);
+	Grid_Consumables->SetOwningCanvasPanel(CanvasPanel);
+	Grid_Craftables->SetOwningCanvasPanel(CanvasPanel);
 
 	ShowEquippables();
 }

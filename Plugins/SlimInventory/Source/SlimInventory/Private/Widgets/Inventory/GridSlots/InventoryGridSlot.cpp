@@ -5,6 +5,7 @@
 //引入图片组件头文件
 #include "Components/Image.h"
 #include "Items/SlimInventoryItem.h"
+#include "Widgets/ItemPop/SlimItemPopUp.h"
 
 void UInventoryGridSlot::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
@@ -29,6 +30,18 @@ void UInventoryGridSlot::SetSlimInventoryItem(USlimInventoryItem* Item)
 	InventoryItem = Item;//设置相应的参数
 }
 
+void UInventoryGridSlot::SetItemPopup(USlimItemPopUp* PopUp)
+{
+	ItemPopup = PopUp;
+	ItemPopup->SetGridIndex( GetIndex() );
+	ItemPopup->OnNativeDestruct.AddUObject( this , &ThisClass::OnItemPopUpDestruct);//绑定析构函数
+}
+
+USlimItemPopUp* UInventoryGridSlot::GetItemPopup() const
+{
+	return ItemPopup.Get();
+}
+
 void UInventoryGridSlot::SetOccupiedTexture()
 {
 	GridSlotState = ESlimGridSlotState::Occupied;
@@ -51,4 +64,9 @@ void UInventoryGridSlot::SetGrayedOutTexture()
 {
 	GridSlotState = ESlimGridSlotState::GrayedOut;
 	Image_GridSlot->SetBrush(Brush_GrayedOut);
+}
+
+void UInventoryGridSlot::OnItemPopUpDestruct(UUserWidget* Menu)
+{
+	ItemPopup.Reset();
 }
