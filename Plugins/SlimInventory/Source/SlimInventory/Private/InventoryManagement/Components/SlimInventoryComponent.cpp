@@ -65,7 +65,7 @@ void USlimInventoryComponent::TryAddItem(USlimInventoryItemComponent* ItemCompon
 		Server_AddNewItem( ItemComponent , Result.bStackable ? Result.TotalRoomToFill : 0 );
 	}
 }
-
+#pragma region Server->Clienct Functions
 //实现服务器发送新增条目的函数
 void USlimInventoryComponent::Server_AddNewItem_Implementation( USlimInventoryItemComponent* ItemComponent, int32 StackCount )
 {
@@ -106,6 +106,31 @@ void USlimInventoryComponent::Server_AddStacksToItem_Implementation( USlimInvent
 	
 }
 
+void USlimInventoryComponent::Server_DropItem_Implementation(USlimInventoryItem* Item, int StackCount)
+{
+	/*SpawnDroppedItem(Item, StackCount);*/
+	const int32 CurrentStackCount = Item->GetTotalStackCount() - StackCount;//获取当前的堆叠数
+	//判断当前的堆叠数量是否有效
+	if (CurrentStackCount <= 0)
+	{
+		InventoryList.RemoveEntry(Item);
+	}
+	else
+	{
+		Item->SetTotalStackCount(CurrentStackCount);//更新最大堆叠数
+	}
+	
+	SpawnDroppedItem(Item,StackCount);
+}
+
+void USlimInventoryComponent::SpawnDroppedItem(USlimInventoryItem* Item, int32 StackCount)
+{
+
+	//TODO: 在场景中创建被丢弃的物品
+
+}
+
+#pragma endregion
 
 void USlimInventoryComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -122,6 +147,8 @@ void USlimInventoryComponent::AddRepSubObject(UObject* Subobject)
 		AddReplicatedSubObject(Subobject);
 	}
 }
+
+
 
 void USlimInventoryComponent::BeginPlay()
 {

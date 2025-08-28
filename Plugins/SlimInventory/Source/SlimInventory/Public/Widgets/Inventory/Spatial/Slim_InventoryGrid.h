@@ -286,5 +286,6 @@ private:
 
 	UFUNCTION()
 	void OnPopUpMenuConsume( int32 Index );
+	void DropItem();//定义丢弃物品的函数
 #pragma endregion
 };

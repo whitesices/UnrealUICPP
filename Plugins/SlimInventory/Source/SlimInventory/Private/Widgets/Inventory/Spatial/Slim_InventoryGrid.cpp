@@ -1049,10 +1049,24 @@ void USlim_InventoryGrid::OnPopUpMenuSplit(int32 SplitAmount, int32 Index)
 
 void USlim_InventoryGrid::OnPopUpMenuDrop(int32 Index)
 {
+	USlimInventoryItem* RightClickedItem = GridSlots[Index]->GetInventoryItem().Get();
+	if (!IsValid(RightClickedItem)) return;//判断缓存的右键获取对象是否有效
+	PickUp(RightClickedItem , Index);
+	DropItem();//调用DropItem函数
 }
 
 void USlim_InventoryGrid::OnPopUpMenuConsume(int32 Index)
 {
+}
+
+void USlim_InventoryGrid::DropItem()
+{
+	if (!IsValid(HoverItem) ) return;//判断HoverItem是否有效
+	if (!IsValid(HoverItem->GetInventoryItem() )) return;//判断获取的Item是否有效
+
+	//TODO : Tell the inventory to remove this item
+	ClearHoverItem();//清空HoverItem
+	ShowTheCursor();//显示滑动鼠标
 }
 
 void USlim_InventoryGrid::SetOwningCanvasPanel(UCanvasPanel* OwningCanvas)

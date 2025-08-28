@@ -30,18 +30,25 @@ public:
 	//声明添加Item的函数
 	UFUNCTION( BlueprintCallable , BlueprintAuthorityOnly , Category="Inventory")
 	void TryAddItem( USlimInventoryItemComponent* ItemComponent);
-
+#pragma region Server->Clienct Functions
 	//声明创建网络同步函数 ， 即从都从服务器发送 ， 客户端去接收
 	UFUNCTION( Server , Reliable )
 	void Server_AddNewItem( USlimInventoryItemComponent* ItemComponent , int32 StackCount );
 	UFUNCTION( Server , Reliable )
 	void Server_AddStacksToItem( USlimInventoryItemComponent* ItemComponent , int32 StackCount , int32 Remainder);
+	//通过服务器发送信息传播给所有客户端
+	UFUNCTION( Server , Reliable )
+	void Server_DropItem( USlimInventoryItem* Item , int StackCount );
+#pragma endregion
 
 	//复写获取生命周期内网络复制函数
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	//声明添加复制子对象
 	void AddRepSubObject(UObject* Subobject);
+
+	//声明丢弃物品后在场景中重新生成物品的函数
+	void SpawnDroppedItem( USlimInventoryItem* Item , int32 StackCount );
 
 	//声明委托多播变量
 	FInventoryItemChange OnItemAdded;
