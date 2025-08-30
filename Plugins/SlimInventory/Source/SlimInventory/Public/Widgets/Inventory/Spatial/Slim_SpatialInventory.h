@@ -21,6 +21,9 @@ public:
 	//重载初始化函数
 	virtual void NativeOnInitialized() override;
 
+	//重载UI鼠标放下事件
+	virtual FReply NativeOnMouseButtonDown( const FGeometry& MyGeometry , const FPointerEvent& MouseEvent) override;
+
 	//重载父类的HasRoomForItem
 	virtual FSlimSlotAvailabilityResult HasRoomForItem(USlimInventoryItemComponent* ItemComponent) const override;
 

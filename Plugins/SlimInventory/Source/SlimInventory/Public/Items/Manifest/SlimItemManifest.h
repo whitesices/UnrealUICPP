@@ -46,14 +46,21 @@ struct SLIMINVENTORY_API FSlimItemManifest
 	template<typename T> requires std::derived_from< T , FSlimItemFragment>
 	T* GetFragmentOfTypeMutable();
 
+	//声明生成捡起物品类的函数
+	void SpawnPickupActor( const UObject* WorldContextObject , const FVector& SpawnLocation , const FRotator& SpawnRotation );
+
 private:
 	//定义选择的属性
 	UPROPERTY( EditAnywhere , Category = "Inventory" )
 	EInventory_ItemCategory ItemCategory{ EInventory_ItemCategory::None };
 
 	//定义物品的标签
-	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	UPROPERTY( EditAnywhere , Category = "Inventory" , meta=(Categories="GameItems") )
 	FGameplayTag ItemType;
+
+	//声明捡起的物品类
+	UPROPERTY( EditAnywhere , Category = "Inventory")
+	TSubclassOf<AActor> PickupActorClass;
 
 	//声明小部件片段
 	UPROPERTY( EditAnywhere , Category="Inventory" , meta=(ExcludeBaseStruct) )

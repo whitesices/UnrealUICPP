@@ -20,6 +20,9 @@ public:
 	//复写获取生命周期内网络复制函数
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	//定义初始化物品清单的方法
+	void InitItemManifest( FSlimItemManifest CopyOfManifest );
+
 	//获取清单信息
 	FSlimItemManifest GetItemManifest() const
 	{

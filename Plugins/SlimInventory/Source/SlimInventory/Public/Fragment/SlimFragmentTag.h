@@ -9,4 +9,5 @@ namespace FragmentTags
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(FragmentTags_GridFragment);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(FragmentTags_ImageFragment);
 	UE_DECLARE_GAMEPLAY_TAG_EXTERN(FragmentTags_StackFragment);
+	UE_DECLARE_GAMEPLAY_TAG_EXTERN(FragmentTags_ConsumeFragment);
 }

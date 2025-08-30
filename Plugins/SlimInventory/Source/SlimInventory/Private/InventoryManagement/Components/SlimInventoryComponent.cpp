@@ -127,7 +127,44 @@ void USlimInventoryComponent::SpawnDroppedItem(USlimInventoryItem* Item, int32 S
 {
 
 	//TODO: 在场景中创建被丢弃的物品
+	const APawn* OwningPawn = OwningPlayerController->GetPawn();//获取拥有的Pawn
+	FVector RotatedForWard = OwningPawn->GetActorForwardVector();//获取Pawn的前向量
+	RotatedForWard = RotatedForWard.RotateAngleAxis( FMath::FRandRange( DropSpawnAngleMin , DropSpawnAngleMax ), FVector::UpVector );
+	FVector SpawnDropLocation = OwningPawn->GetActorLocation() + RotatedForWard * FMath::FRandRange( DropSpawnDistanceMin , DropSpawnDistanceMax );
+	SpawnDropLocation.Z -= RelativeSpawnElevation;//调整Z轴的高度
+	const FRotator SpawnRotation = FRotator::ZeroRotator;
 
+	//TODO Have the item manifest spawn the pickup actor
+	FSlimItemManifest ItemManifest = Item->GetItemManifestMutable();//获取对应的物品清单
+	//判断物品是否可以堆叠
+	if (FSlimStackFragment* StackableFragment = ItemManifest.GetFragmentOfTypeMutable<FSlimStackFragment>() )
+	{
+		StackableFragment->SetStackCount(StackCount);//更新堆叠数量
+	}
+
+	ItemManifest.SpawnPickupActor( this , SpawnDropLocation , SpawnRotation );
+}
+
+void USlimInventoryComponent::Server_Consumeable_Implementation(USlimInventoryItem* Item, int StackCount)
+{
+	//更新当前的堆叠数量
+	const int32 CurrentStackCount = Item->GetTotalStackCount() - 1;
+	//判断当前堆叠数量是否有效
+	if( CurrentStackCount <= 0 )
+	{
+		InventoryList.RemoveEntry(Item);
+	}
+	else
+	{
+		Item->SetTotalStackCount(CurrentStackCount);//更新最大堆叠数
+	}
+
+	//TODO: Get the consumeble fragment and call Consume
+	//(Actually create the Consumeable Fragment )
+	if (FSlimConsumeableFrgament* ConsumeableFragement = Item->GetItemManifestMutable().GetFragmentOfTypeMutable<FSlimConsumeableFrgament>())
+	{
+		ConsumeableFragement->OnConsumeable( OwningPlayerController.Get() );
+	}
 }
 
 #pragma endregion

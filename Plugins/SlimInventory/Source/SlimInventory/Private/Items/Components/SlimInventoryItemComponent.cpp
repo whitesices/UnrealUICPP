@@ -9,12 +9,18 @@ USlimInventoryItemComponent::USlimInventoryItemComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
 	PickupMessage = FString("E - Pickup");
+	SetIsReplicatedByDefault(true);//组件默认开始网络同步
 }
 
 void USlimInventoryItemComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(ThisClass, ItemManifest);
+}
+
+void USlimInventoryItemComponent::InitItemManifest(FSlimItemManifest CopyOfManifest)
+{
+	ItemManifest = CopyOfManifest;
 }
 
 void USlimInventoryItemComponent::Pickup()

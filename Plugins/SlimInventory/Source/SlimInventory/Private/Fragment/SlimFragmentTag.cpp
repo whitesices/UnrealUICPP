@@ -8,4 +8,5 @@ namespace FragmentTags
 	UE_DEFINE_GAMEPLAY_TAG(FragmentTags_GridFragment, "FragmentTags.GridFragment");
 	UE_DEFINE_GAMEPLAY_TAG(FragmentTags_ImageFragment,"FragmentTags.ImageFragment");
 	UE_DEFINE_GAMEPLAY_TAG(FragmentTags_StackFragment,"FragmentTags.StackFragment");
+	UE_DEFINE_GAMEPLAY_TAG(FragmentTags_ConsumeFragment, "FragmentTags.ConsumeFragment");
 }

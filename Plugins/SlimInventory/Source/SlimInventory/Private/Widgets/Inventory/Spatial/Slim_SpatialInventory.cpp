@@ -29,6 +29,12 @@ void USlim_SpatialInventory::NativeOnInitialized()
 	ShowEquippables();
 }
 
+FReply USlim_SpatialInventory::NativeOnMouseButtonDown(const FGeometry& MyGeometry, const FPointerEvent& MouseEvent)
+{
+	ActivateGrid->DropItem();
+	return FReply::Handled();
+}
+
 FSlimSlotAvailabilityResult USlim_SpatialInventory::HasRoomForItem(USlimInventoryItemComponent* ItemComponent) const
 {
 	/*return FSlimSlotAvailabilityResult();*/

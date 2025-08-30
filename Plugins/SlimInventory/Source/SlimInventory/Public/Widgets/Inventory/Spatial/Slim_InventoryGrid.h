@@ -64,6 +64,7 @@ public:
 
 #pragma region 右键弹出菜单
 	void SetOwningCanvasPanel( UCanvasPanel* OwningCanvas);
+	void DropItem();//定义丢弃物品的函数
 #pragma endregion
 private:
 	//自定义初始化Grid函数
@@ -286,6 +287,6 @@ private:
 
 	UFUNCTION()
 	void OnPopUpMenuConsume( int32 Index );
-	void DropItem();//定义丢弃物品的函数
+	
 #pragma endregion
 };

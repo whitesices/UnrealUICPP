@@ -7,6 +7,8 @@
 
 #include "SlimItemFragment.generated.h"
 
+class APlayerController;
+
 USTRUCT(BlueprintType)
 struct FSlimItemFragment
 {
@@ -27,7 +29,7 @@ public:
 
 private:
 	//声明FragmentTag
-	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	UPROPERTY( EditAnywhere , Category = "Inventory" , meta=(Categories="FragmentTags") )
 	FGameplayTag FragmentTag = FGameplayTag::EmptyTag;
 };
 
@@ -89,4 +91,35 @@ private:
 
 	UPROPERTY( EditAnywhere , Category = "Inventory" )
 	int32 StackCount{1};
+};
+//声明可消费片段
+USTRUCT(BlueprintType)
+struct FSlimConsumeableFrgament : public FSlimItemFragment
+{
+	GENERATED_BODY()
+//声明消费函数
+	virtual void OnConsumeable( APlayerController* PC ) {}
+
+};
+
+//声明健康值片段
+USTRUCT(BlueprintType)
+struct FSlimHealthFragment :public FSlimConsumeableFrgament
+{
+	GENERATED_BODY()
+	UPROPERTY( EditAnywhere , Category="Inventory")
+	float HealthAmount{20.f};
+
+	virtual void OnConsumeable(APlayerController* PC) override;
+};
+
+//声明魔力值片段
+USTRUCT(BlueprintType)
+struct FSlimManaFragment :public FSlimConsumeableFrgament
+{
+	GENERATED_BODY()
+	UPROPERTY(EditAnywhere, Category = "Inventory")
+	float ManaAmount{ 20.f };
+
+	virtual void OnConsumeable(APlayerController* PC) override;
 };

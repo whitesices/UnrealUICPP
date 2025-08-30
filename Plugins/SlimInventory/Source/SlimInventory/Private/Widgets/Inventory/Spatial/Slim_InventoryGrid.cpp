@@ -1057,6 +1057,22 @@ void USlim_InventoryGrid::OnPopUpMenuDrop(int32 Index)
 
 void USlim_InventoryGrid::OnPopUpMenuConsume(int32 Index)
 {
+	//获取鼠标右键获取的对象部件
+	USlimInventoryItem* RightClickedItem = GridSlots[Index]->GetInventoryItem().Get();
+	if (!IsValid(RightClickedItem)) return;//判断获取的对象是否有效
+	const int32 UpperLeftIndex = GridSlots[Index]->GetUpperLeftIndex();//获取左上角索引
+	UInventoryGridSlot* UpperLeftSlot = GridSlots[UpperLeftIndex];
+	const int32 CurrentStackCount = UpperLeftSlot->GetStackCount() - 1;
+
+	//更新左上角索引的堆叠数量
+	UpperLeftSlot->SetStackCount(CurrentStackCount);
+	SlottedItems.FindChecked(UpperLeftIndex)->UpdateStackCount(CurrentStackCount);
+	//TODO : tell the server we`re consuming an item
+	if (CurrentStackCount <= 0)
+	{
+		RemoveItemFromGrid(RightClickedItem,Index);//将该物品从网格中移除
+	}
+	InventoryComponent->Server_Consumeable(RightClickedItem,CurrentStackCount);//调用服务器端的消费函数
 }
 
 void USlim_InventoryGrid::DropItem()
@@ -1065,6 +1081,7 @@ void USlim_InventoryGrid::DropItem()
 	if (!IsValid(HoverItem->GetInventoryItem() )) return;//判断获取的Item是否有效
 
 	//TODO : Tell the inventory to remove this item
+	InventoryComponent->Server_DropItem( HoverItem->GetInventoryItem() , HoverItem->GetStackCount() );
 	ClearHoverItem();//清空HoverItem
 	ShowTheCursor();//显示滑动鼠标
 }

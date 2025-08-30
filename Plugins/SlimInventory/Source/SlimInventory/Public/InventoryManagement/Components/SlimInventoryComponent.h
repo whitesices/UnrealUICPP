@@ -39,6 +39,9 @@ public:
 	//通过服务器发送信息传播给所有客户端
 	UFUNCTION( Server , Reliable )
 	void Server_DropItem( USlimInventoryItem* Item , int StackCount );
+
+	UFUNCTION( Server , Reliable )
+	void Server_Consumeable( USlimInventoryItem* Item , int StackCount);
 #pragma endregion
 
 	//复写获取生命周期内网络复制函数
@@ -78,6 +81,22 @@ private:
 	//声明一个FastArray来存储条目
 	UPROPERTY(Replicated)
 	FSlimInventoryFastArray InventoryList;
+
+#pragma region SpawnDropItemPropertites
+	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	float DropSpawnAngleMin = -85.f;
+
+	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	float DropSpawnAngleMax = 85.f;
+
+	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	float DropSpawnDistanceMin = 10.f;
+	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	float DropSpawnDistanceMax = 50.f;
+
+	UPROPERTY( EditAnywhere , Category = "Inventory" )
+	float RelativeSpawnElevation = 70.f;
+#pragma endregion
 
 	//声明flag来存储UI是否打开
 	bool bIsInventoryUIOpen;
