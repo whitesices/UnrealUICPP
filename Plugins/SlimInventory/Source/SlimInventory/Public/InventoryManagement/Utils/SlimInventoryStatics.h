@@ -31,6 +31,14 @@ public:
 	//定义遍历矩阵的模板函数
 	template< typename T, typename FuncT >
 	static void ForEach2D(TArray<T>& Array, int32 Index, const FIntPoint& Range2D, int32 GridColumns, const FuncT& Fucntion);
+
+#pragma region HoverOperations
+	UFUNCTION(BlueprintCallable , Category="Inventory")
+	static void ItemHovered( APlayerController* PlayerController,USlimInventoryItem* InItem);
+
+	UFUNCTION(BlueprintCallable , Category="Inventory")
+	static void ItemUnhovered(APlayerController* PlayerController);
+#pragma endregion
 };
 
 template<typename T, typename FuncT>

@@ -10,6 +10,7 @@ class USlim_InventoryGrid;
 class UWidgetSwitcher;
 class UButton;
 class UCanvasPanel;
+class USlimItemDescription;
 /**
  * 
  */
@@ -26,6 +27,13 @@ public:
 
 	//重载父类的HasRoomForItem
 	virtual FSlimSlotAvailabilityResult HasRoomForItem(USlimInventoryItemComponent* ItemComponent) const override;
+
+	//Begin interface USlim_InventoryBase
+	//重载父类的方法
+	virtual void OnItemHovered(USlimInventoryItem* Item) override;
+	virtual void OnItemUnhovered() override;
+	virtual bool HasHoverItem() const override;
+	//End interface USlim_InventoryBase
 
 private:
 	//添加画布
@@ -52,6 +60,21 @@ private:
 	TObjectPtr<UButton> Button_Consumables;
 	UPROPERTY( meta = (BindWidget) )
 	TObjectPtr<UButton> Button_Craftables;
+#pragma region ItemDescription
+	//声明物品详细信息UI
+	UPROPERTY(EditAnywhere , Category="Inventory")
+	TSubclassOf<USlimItemDescription> ItemDescriptionClass;
+
+	UPROPERTY()
+	TObjectPtr<USlimItemDescription> ItemDescription;
+
+	UPROPERTY(EditAnywhere , Category="Inventory")
+	float DescriptionTimerDelay = 0.5f;
+
+	//定义TimerHandle
+	FTimerHandle DescriptionTimer;
+
+#pragma endregion
 
 	//声明激活的网格
 	TWeakObjectPtr<USlim_InventoryGrid> ActivateGrid;
@@ -68,5 +91,9 @@ private:
 	void ResetButtonStates( UButton* Button );
 	//声明激活对应网格函数
 	void SetActivateGrid( USlim_InventoryGrid* Grid , UButton* Button );
+
+#pragma region ItemDescription
+	USlimItemDescription* GetItemDescription();
+#pragma endregion
 	
 };

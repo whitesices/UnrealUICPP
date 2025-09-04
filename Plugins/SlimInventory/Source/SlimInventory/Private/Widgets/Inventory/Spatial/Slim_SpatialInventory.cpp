@@ -11,6 +11,7 @@
 #include "SlimInventory.h"
 #include "InventoryManagement/Utils/SlimInventoryStatics.h"
 #include "Components/CanvasPanel.h"
+#include "Widgets/ItemDescription/SlimItemDescription.h"//引入ItemDescription头文件
 
 void USlim_SpatialInventory::NativeOnInitialized()
 {
@@ -55,6 +56,40 @@ FSlimSlotAvailabilityResult USlim_SpatialInventory::HasRoomForItem(USlimInventor
 	}
 }
 
+#pragma region 重载父类Hover方法
+void USlim_SpatialInventory::OnItemHovered(USlimInventoryItem* Item)
+{
+	Super::OnItemHovered(Item);
+	USlimItemDescription* ItemDescriptionUI = GetItemDescription();
+	ItemDescriptionUI->SetVisibility(ESlateVisibility::Collapsed);//设置为折叠
+	GetOwningPlayer()->GetWorldTimerManager().ClearTimer(DescriptionTimer);//先清除TimerHandle
+
+	//声明Timer委托
+	FTimerDelegate DescriptionTimerDelegate;
+	DescriptionTimerDelegate.BindLambda([this]()
+	{
+		GetItemDescription()->SetVisibility(ESlateVisibility::HitTestInvisible);//设置显示但不遮挡
+	}
+	);
+
+	GetOwningPlayer()->GetWorldTimerManager().SetTimer(DescriptionTimer, DescriptionTimerDelay, false);
+}
+
+void USlim_SpatialInventory::OnItemUnhovered()
+{
+	Super::OnItemUnhovered();
+}
+
+bool USlim_SpatialInventory::HasHoverItem() const
+{
+	if (Grid_Equippables->HasHoverItem()) return true;
+	if (Grid_Consumables->HasHoverItem()) return true;
+	if (Grid_Craftables->HasHoverItem()) return true;
+
+	return false;
+}
+#pragma endregion
+
 void USlim_SpatialInventory::ShowEquippables()
 {
 	//绑定相应的状态显示
@@ -91,3 +126,10 @@ void USlim_SpatialInventory::SetActivateGrid(USlim_InventoryGrid* Grid, UButton*
 	ResetButtonStates(Button);
 	Switcher->SetActiveWidget(Grid);
 }
+
+#pragma region ItemDescription
+USlimItemDescription* USlim_SpatialInventory::GetItemDescription()
+{
+	return nullptr;
+}
+#pragma endregion

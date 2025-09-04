@@ -66,6 +66,10 @@ public:
 	void SetOwningCanvasPanel( UCanvasPanel* OwningCanvas);
 	void DropItem();//定义丢弃物品的函数
 #pragma endregion
+
+#pragma region 物品详细信息HoverItem相关
+	bool HasHoverItem() const;
+#pragma endregion
 private:
 	//自定义初始化Grid函数
 	void ConstructGrid();

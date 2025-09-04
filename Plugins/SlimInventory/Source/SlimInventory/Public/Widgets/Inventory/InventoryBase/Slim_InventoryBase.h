@@ -8,6 +8,7 @@
 #include "Slim_InventoryBase.generated.h"
 
 class USlimInventoryItemComponent;
+class USlimInventoryItem;//前置声明InventoryItem
 
 /**
  * 
@@ -23,5 +24,11 @@ public:
 	{
 		return FSlimSlotAvailabilityResult();
 	}
-	
+#pragma region HoverItem
+	//定义Hovr与UnHover的方法
+	virtual void OnItemHovered( USlimInventoryItem* Item ) {}
+	virtual void OnItemUnhovered() {}
+	//定义是否有HoverItem的方法
+	virtual bool HasHoverItem() const { return false; }
+#pragma endregion
 };

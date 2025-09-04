@@ -22,8 +22,15 @@ class SLIMINVENTORY_API USlimSlottedItem : public UUserWidget
 	GENERATED_BODY()
 
 public:
+#pragma region 重载UI鼠标按键事件
 	//覆写button按下事件
 	virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	//覆写Mouse Enter事件
+	virtual void NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent) override;
+	//覆写Mouse Leave事件
+	virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
+
+#pragma endregion
 
 	//定义返回是否开启堆叠的函数
 	bool IsStackable() const { return bIsStackable; }

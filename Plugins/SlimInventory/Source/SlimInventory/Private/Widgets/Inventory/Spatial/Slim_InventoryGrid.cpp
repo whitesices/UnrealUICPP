@@ -1092,6 +1092,13 @@ void USlim_InventoryGrid::SetOwningCanvasPanel(UCanvasPanel* OwningCanvas)
 }
 #pragma endregion
 
+#pragma region 物品详细信息HoverItem相关
+bool USlim_InventoryGrid::HasHoverItem() const
+{
+	return IsValid(HoverItem);//返回HoverItem是否有效
+}
+#pragma endregion
+
 
 //void USlim_InventoryGrid::UpdateGridSlots(USlimInventoryItem* NewItem, const int32 Index)
 //{

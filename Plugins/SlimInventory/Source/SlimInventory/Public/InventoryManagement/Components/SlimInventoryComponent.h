@@ -53,6 +53,9 @@ public:
 	//声明丢弃物品后在场景中重新生成物品的函数
 	void SpawnDroppedItem( USlimInventoryItem* Item , int32 StackCount );
 
+	//声明获取InventoryUIMenu的函数
+	USlim_InventoryBase* GetInventoryMenu() const { return InventoryUIMenu; }
+
 	//声明委托多播变量
 	FInventoryItemChange OnItemAdded;
 	FInventoryItemChange OnItemRemoved;

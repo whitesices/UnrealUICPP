@@ -5,12 +5,25 @@
 #include "Items/SlimInventoryItem.h"//引入自定义的Item
 #include "Components/Image.h" //引入图片
 #include "Components/TextBlock.h"//引入文本数据
+#include "InventoryManagement/Utils/SlimInventoryStatics.h"//引入自定义的蓝图函数库
 
+#pragma region 鼠标操作重载
 FReply USlimSlottedItem::NativeOnMouseButtonDown(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
 	OnSlottedItemClicked.Broadcast(GridIndex , InMouseEvent );//触发自定义的多播委托
 	return FReply::Handled();
 }
+
+void USlimSlottedItem::NativeOnMouseEnter(const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
+{
+	USlimInventoryStatics::ItemHovered( GetOwningPlayer(), InventoryItem.Get() );
+}
+
+void USlimSlottedItem::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+	USlimInventoryStatics::ItemUnhovered( GetOwningPlayer() );
+}
+#pragma endregion
 
 void USlimSlottedItem::SetImageBrush(const FSlateBrush& Brush) const
 {
