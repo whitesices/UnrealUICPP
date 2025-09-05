@@ -59,7 +59,7 @@ FSlimSlotAvailabilityResult USlim_SpatialInventory::HasRoomForItem(USlimInventor
 #pragma region 重载父类Hover方法
 void USlim_SpatialInventory::OnItemHovered(USlimInventoryItem* Item)
 {
-	Super::OnItemHovered(Item);
+	/*Super::OnItemHovered(Item);*/
 	USlimItemDescription* ItemDescriptionUI = GetItemDescription();
 	ItemDescriptionUI->SetVisibility(ESlateVisibility::Collapsed);//设置为折叠
 	GetOwningPlayer()->GetWorldTimerManager().ClearTimer(DescriptionTimer);//先清除TimerHandle
@@ -72,12 +72,14 @@ void USlim_SpatialInventory::OnItemHovered(USlimInventoryItem* Item)
 	}
 	);
 
-	GetOwningPlayer()->GetWorldTimerManager().SetTimer(DescriptionTimer, DescriptionTimerDelay, false);
+	GetOwningPlayer()->GetWorldTimerManager().SetTimer(DescriptionTimer, DescriptionTimerDelegate ,DescriptionTimerDelay, false);
 }
 
 void USlim_SpatialInventory::OnItemUnhovered()
 {
-	Super::OnItemUnhovered();
+	/*Super::OnItemUnhovered();*/
+	GetItemDescription()->SetVisibility( ESlateVisibility::Collapsed );
+	GetOwningPlayer()->GetWorldTimerManager().ClearTimer(DescriptionTimer);//清除定时器
 }
 
 bool USlim_SpatialInventory::HasHoverItem() const
@@ -130,6 +132,12 @@ void USlim_SpatialInventory::SetActivateGrid(USlim_InventoryGrid* Grid, UButton*
 #pragma region ItemDescription
 USlimItemDescription* USlim_SpatialInventory::GetItemDescription()
 {
-	return nullptr;
+	if (!IsValid(ItemDescription) )
+	{
+		ItemDescription = CreateWidget<USlimItemDescription>( GetOwningPlayer() , ItemDescriptionClass );
+		CanvasPanel->AddChild(ItemDescription);//添加物品详细信息
+	}
+
+	return ItemDescription;
 }
 #pragma endregion
