@@ -29,4 +29,6 @@ public:
 	//定义可供蓝图调用判断是否在网格范围内的函数
 	UFUNCTION( BlueprintCallable , Category="Inventory")
 	static bool IsWithinGridBounds( const FVector2D& BoundaryPos , const FVector2D& WidgetSize , const FVector2D& MousePos );
+
+	static FVector2D GetClampedWidgetPosition( const FVector2D& Boudary , const FVector2D& WidgetSize , const FVector2D& MousePos );
 };

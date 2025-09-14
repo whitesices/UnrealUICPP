@@ -4,8 +4,10 @@
 #include "Widgets/Inventory/Spatial/Slim_SpatialInventory.h"
 //引入自定义的网格类
 #include "Widgets/Inventory/Spatial/Slim_InventoryGrid.h"
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/WidgetSwitcher.h"
 #include "Components/Button.h"
+#include "Components/CanvasPanelSlot.h"
 #include "Items/Components/SlimInventoryItemComponent.h"
 
 #include "SlimInventory.h"
@@ -13,6 +15,7 @@
 #include "Components/CanvasPanel.h"
 #include "Widgets/ItemDescription/SlimItemDescription.h"//引入ItemDescription头文件
 
+#pragma region 重载父类函数
 void USlim_SpatialInventory::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
@@ -35,6 +38,14 @@ FReply USlim_SpatialInventory::NativeOnMouseButtonDown(const FGeometry& MyGeomet
 	ActivateGrid->DropItem();
 	return FReply::Handled();
 }
+
+void USlim_SpatialInventory::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+{
+	Super::NativeTick(MyGeometry, InDeltaTime);
+	if (!IsValid(ItemDescription)) return;//判断物品详细信息UI是否被创建
+	SetItemDescriptionSizeAndPosition(ItemDescription,CanvasPanel);
+}
+#pragma endregion
 
 FSlimSlotAvailabilityResult USlim_SpatialInventory::HasRoomForItem(USlimInventoryItemComponent* ItemComponent) const
 {
@@ -139,5 +150,21 @@ USlimItemDescription* USlim_SpatialInventory::GetItemDescription()
 	}
 
 	return ItemDescription;
+}
+void USlim_SpatialInventory::SetItemDescriptionSizeAndPosition(USlimItemDescription* InItemDescription, UCanvasPanel* InCanvasPanel) const
+{
+	UCanvasPanelSlot* ItemDescriptionCPS = UWidgetLayoutLibrary::SlotAsCanvasSlot(InItemDescription);
+	if (!IsValid(ItemDescriptionCPS)) return;//判断是否有效
+
+	const FVector2D ItemDescriptionSize = ItemDescription->GetBoxSize();
+	ItemDescriptionCPS->SetSize(ItemDescriptionSize);
+
+	FVector2D ClampedPosition = UInventoryWidgetUtils::GetClampedWidgetPosition(
+		UInventoryWidgetUtils::GetWidgetSize(InCanvasPanel),
+		ItemDescriptionSize,
+		UWidgetLayoutLibrary::GetMousePositionOnViewport( GetOwningPlayer() )
+	);
+
+	ItemDescriptionCPS->SetPosition(ClampedPosition);
 }
 #pragma endregion

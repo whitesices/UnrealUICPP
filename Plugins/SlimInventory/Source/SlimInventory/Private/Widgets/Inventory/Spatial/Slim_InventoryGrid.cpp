@@ -429,6 +429,7 @@ int32 USlim_InventoryGrid::GetStackAmount(const UInventoryGridSlot* GridSlot) co
 #pragma region 鼠标事件处理函数
 void USlim_InventoryGrid::OnSlottedItemClicked(int32 InGridIndex, const FPointerEvent& InMouseEvent)
 {
+	USlimInventoryStatics::ItemUnhovered(GetOwningPlayer());//点击执行
 	/*UE_LOG(LogTemp, Warning, TEXT("Clicked on item at index %d"), InGridIndex);*/
 	//判断网格插槽索引有效
 	check( GridSlots.IsValidIndex(InGridIndex) );

@@ -19,11 +19,14 @@ class SLIMINVENTORY_API USlim_SpatialInventory : public USlim_InventoryBase
 {
 	GENERATED_BODY()
 public:
+#pragma region 重载父类函数
 	//重载初始化函数
 	virtual void NativeOnInitialized() override;
-
 	//重载UI鼠标放下事件
 	virtual FReply NativeOnMouseButtonDown( const FGeometry& MyGeometry , const FPointerEvent& MouseEvent) override;
+	//重载Tick函数
+	virtual void NativeTick( const FGeometry& MyGeometry , float InDeltaTime ) override;
+#pragma endregion
 
 	//重载父类的HasRoomForItem
 	virtual FSlimSlotAvailabilityResult HasRoomForItem(USlimInventoryItemComponent* ItemComponent) const override;
@@ -94,6 +97,7 @@ private:
 
 #pragma region ItemDescription
 	USlimItemDescription* GetItemDescription();
+	void SetItemDescriptionSizeAndPosition( USlimItemDescription* InItemDescription, UCanvasPanel* InCanvasPanel) const;
 #pragma endregion
 	
 };
