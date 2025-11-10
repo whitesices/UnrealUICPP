@@ -8,6 +8,7 @@
 #include "SlimItemFragment.generated.h"
 
 class APlayerController;
+class UUSlimCompositeBase;
 
 USTRUCT(BlueprintType)
 struct FSlimItemFragment
@@ -122,4 +123,15 @@ struct FSlimManaFragment :public FSlimConsumeableFrgament
 	float ManaAmount{ 20.f };
 
 	virtual void OnConsumeable(APlayerController* PC) override;
+};
+
+//声明库存UI片段
+USTRUCT(BlueprintType)
+struct FSlimInventoryItemFragment :public FSlimItemFragment
+{
+	GENERATED_BODY()
+
+	virtual void Assimilate(UUSlimCompositeBase* Composite) const;
+protected:
+	bool MatchesWidgetTag(const UUSlimCompositeBase* Composite) const;
 };

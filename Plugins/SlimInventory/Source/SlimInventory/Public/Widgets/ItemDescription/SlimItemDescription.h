@@ -3,7 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Blueprint/UserWidget.h"
+//#include "Blueprint/UserWidget.h"
+#include "Widgets/Composite/USlimCompositeBase.h"
 #include "SlimItemDescription.generated.h"
 
 class USizeBox;
@@ -12,7 +13,7 @@ class USizeBox;
  * 
  */
 UCLASS()
-class SLIMINVENTORY_API USlimItemDescription : public UUserWidget
+class SLIMINVENTORY_API USlimItemDescription : public UUSlimCompositeBase
 {
 	GENERATED_BODY()
 public:

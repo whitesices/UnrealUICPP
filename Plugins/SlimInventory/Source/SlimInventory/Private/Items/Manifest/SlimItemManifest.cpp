@@ -14,6 +14,10 @@ USlimInventoryItem* FSlimItemManifest::Manifest(UObject* NewOuter)
     return NewItem;
 }
 
+void FSlimItemManifest::AssimilateIventoryFragments(UUSlimCompositeBase* Composite) const
+{
+}
+
 void FSlimItemManifest::SpawnPickupActor(const UObject* WorldContextObject, const FVector& SpawnLocation, const FRotator& SpawnRotation)
 {
     //判断拾取的物品是否有效

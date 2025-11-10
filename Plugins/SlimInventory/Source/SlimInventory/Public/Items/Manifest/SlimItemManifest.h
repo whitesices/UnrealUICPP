@@ -14,6 +14,7 @@
  */
 
 class USlimInventoryItem;
+class UUSlimCompositeBase;
 struct FSlimItemFragment;
 
 USTRUCT(BlueprintType)
@@ -34,6 +35,9 @@ struct SLIMINVENTORY_API FSlimItemManifest
 		return ItemType;
 	}
 
+	//赋予库存片段
+	void AssimilateIventoryFragments(UUSlimCompositeBase* Composite) const;
+
 	//声明一个模板函数 去存储不同类型
 	template<typename T> requires std::derived_from< T , FSlimItemFragment >
 	const T* GetFragmentOfTypeWithTag( const FGameplayTag& FragmentTag ) const;
@@ -45,6 +49,10 @@ struct SLIMINVENTORY_API FSlimItemManifest
 	//声明一个模板类函数去通过类型匹配获取对应的片段
 	template<typename T> requires std::derived_from< T , FSlimItemFragment>
 	T* GetFragmentOfTypeMutable();
+
+	//获取所有片段的类型
+	template<typename T> requires std::derived_from<T, FSlimItemFragment>
+	TArray<const T*> GetAllFragmentsOfType() const;
 
 	//声明生成捡起物品类的函数
 	void SpawnPickupActor( const UObject* WorldContextObject , const FVector& SpawnLocation , const FRotator& SpawnRotation );
@@ -111,4 +119,21 @@ inline T* FSlimItemManifest::GetFragmentOfTypeMutable()
 		}
 	}
 	return nullptr;
+}
+
+template<typename T> requires std::derived_from<T,FSlimItemFragment>
+inline TArray<const T*> FSlimItemManifest::GetAllFragmentsOfType() const
+{
+	TArray<const T*> ResultArray;
+
+	for (const TInstancedStruct<FSlimItemFragment>& Fragment : Fragments)
+	{
+		if (const T* FragmentPtr = Fragment.GetPtr<T>())
+		{
+			ResultArray.Add(FragmentPtr);
+		}
+	}
+
+
+	return ResultArray;
 }

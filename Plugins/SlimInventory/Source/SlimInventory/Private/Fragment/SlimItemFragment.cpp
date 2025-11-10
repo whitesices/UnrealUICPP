@@ -2,6 +2,7 @@
 
 
 #include "Fragment/SlimItemFragment.h"
+#include "Widgets/Composite/USlimCompositeBase.h"//基础类
 
 void FSlimHealthFragment::OnConsumeable(APlayerController* PC)
 {
@@ -23,4 +24,15 @@ void FSlimManaFragment::OnConsumeable(APlayerController* PC)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 7.f, FColor::Blue, FString::Printf(TEXT("Health Potion consumed! Healing by: %f"), ManaAmount));
 	}
+}
+
+void FSlimInventoryItemFragment::Assimilate(UUSlimCompositeBase* Composite) const
+{
+	if ( !MatchesWidgetTag(Composite) ) return;
+	Composite->Expand();//展开UI
+}
+
+bool FSlimInventoryItemFragment::MatchesWidgetTag(const UUSlimCompositeBase* Composite) const
+{
+	return Composite->GetFragmentTag().MatchesTagExact( GetFragmentTag() );//获取对应的游戏标签
 }
